@@ -31,6 +31,41 @@ function cloneMenu(menu){
   return menu.map((c) => ({ ...c, items: c.items.map((i) => ({ ...i })) }));
 }
 
+/* ===== جسر ناقل الأحداث (Hub) ===== */
+function mapHubToRest(s){
+  if (s === "processing" || s === "new") return "new";
+  if (s === "preparing") return "preparing";
+  if (s === "ready") return "ready";
+  if (s === "onway" || s === "delivered") return "delivered";
+  if (s === "rejected" || s === "canceled") return "rejected";
+  return null; // unpaid → لا يظهر للمطعم
+}
+function restaurantFromHub(h){
+  return {
+    id: h.id, number: h.number || 0, status: mapHubToRest(h.status) || "new",
+    customer: { name: h.customerName || "زبون", phone: h.customerPhone || "", address: h.customerArea || h.address || "" },
+    items: (h.items || []).map((i, ix) => ({ id: i.id || ("hi" + ix), name: i.name, price: i.price || 0, qty: i.qty || 1, mods: i.mods || [] })),
+    note: h.note || "",
+    payment: (h.payMethod && /نقد|cash/i.test(h.payMethod)) ? "cash" : (h.paid ? "online" : "cash"),
+    subtotal: h.subtotal || 0, delivery: h.deliveryFee || 0, grandTotal: h.total || ((h.subtotal || 0) + (h.deliveryFee || 0)),
+    createdAt: h.createdAt || Date.now(), acceptedAt: null, prepTime: null, readyAt: null,
+    _hub: true,
+  };
+}
+function restaurantToHub(o, status, restName){
+  return {
+    id: o.id, number: o.number, status: status,
+    restaurantName: o._hub ? undefined : (restName || "المطعم"),
+    customerName: o.customer && o.customer.name, customerPhone: o.customer && o.customer.phone,
+    customerArea: o.customer && o.customer.address, address: o.customer && o.customer.address,
+    items: (o.items || []).map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+    itemsCount: (o.items || []).reduce((s, i) => s + (i.qty || 0), 0),
+    subtotal: o.subtotal, deliveryFee: o.delivery, total: o.grandTotal,
+    payMethod: o.payment, paid: o.payment === "online",
+    note: o.note, origin: o._hub ? undefined : "restaurant", createdAt: o.createdAt,
+  };
+}
+
 function App(){
   const saved = useRef(loadState()).current;
 
@@ -70,6 +105,31 @@ function App(){
     else A.stopAlert();
   }, [alertQueue.length, muted]);
 
+  /* استقبال الطلبات الحيّة من الزبون/الإدارة عبر الـ hub */
+  const hubSeen = useRef({});
+  useEffect(() => {
+    if (!window.SonbolHub) return;
+    function applyHubOrder(h){
+      if (!h || !h.id) return;
+      const rstatus = mapHubToRest(h.status);
+      if (rstatus === null) return; // طلب غير مدفوع — لا يظهر بعد
+      setOrders((prev) => {
+        const ex = prev.find((o) => o.id === h.id);
+        if (ex) return prev.map((o) => o.id === h.id ? { ...o, status: rstatus } : o);
+        return [...prev, restaurantFromHub(h)];
+      });
+      const firstTime = !hubSeen.current[h.id];
+      hubSeen.current[h.id] = h.status;
+      if (firstTime && (h.status === "processing" || h.status === "new") && h.origin !== "restaurant") {
+        setAlertQueue((q) => q.includes(h.id) ? q : [...q, h.id]); // طلب جديد → صوت + منبثقة
+      }
+    }
+    const off1 = SonbolHub.on("order", applyHubOrder);
+    const off2 = SonbolHub.on("init", (list) => list.forEach(applyHubOrder));
+    SonbolHub.connect();
+    return () => { off1 && off1(); off2 && off2(); };
+  }, []);
+
   const newCount   = orders.filter((o) => o.status === "new").length;
   const prepCount  = orders.filter((o) => o.status === "preparing").length;
   const readyCount = orders.filter((o) => o.status === "ready").length;
@@ -94,6 +154,7 @@ function App(){
       ? { ...o, status: "preparing", acceptedAt: Date.now(), prepTime: prep } : o));
     clearFromQueue(order.id);
     A.blip(true);
+    if (window.SonbolHub) SonbolHub.publish(restaurantToHub(order, "preparing", settings.name));
   }
   function reject(order, reason){
     setOrders((prev) => prev.map((o) => o.id === order.id
@@ -102,18 +163,21 @@ function App(){
     clearFromQueue(order.id);
     setRejecting(null);
     A.blip(false);
+    if (window.SonbolHub) SonbolHub.publish(restaurantToHub(order, "rejected", settings.name));
   }
   function action(order, type){
     if (type === "open-accept"){ setDrawerId(null); setManualNewId(order.id); return; }
     if (type === "ready"){
       setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: "ready", readyAt: Date.now() } : o));
       A.blip(true);
+      if (window.SonbolHub) SonbolHub.publish(restaurantToHub(order, "ready", settings.name));
     }
     if (type === "delivered"){
       setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: "delivered", deliveredAt: Date.now() } : o));
       setSession((s) => ({ ...s, delivered: s.delivered + 1, revenue: s.revenue + order.subtotal }));
       setDrawerId(null);
       A.blip(true);
+      if (window.SonbolHub) SonbolHub.publish(restaurantToHub(order, "onway", settings.name)); // سُلّم للكابتن → في الطريق
     }
   }
   function openOrder(order){

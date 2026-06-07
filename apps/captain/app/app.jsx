@@ -124,6 +124,24 @@ function ResumeBar({ order, onResume, t }) {
   );
 }
 
+/* ===== جسر ناقل الأحداث (Hub) ===== */
+function captainFromHub(h) {
+  return {
+    id: h.id, number: h.number,
+    store: h.restaurantName || 'مطعم', storeArea: h.restaurantArea || '', storePhone: h.restaurantPhone || '',
+    customer: h.customerName || 'زبون', customerArea: h.customerArea || h.address || '', customerPhone: h.customerPhone || '',
+    items: (h.items || []).map((i) => ({ n: i.name, q: i.qty })),
+    note: h.note || '',
+    total: h.subtotal || h.total || 0, fee: h.deliveryFee || 0,
+    pay: h.paid ? 'مدفوع إلكترونياً' : 'نقداً عند التسليم',
+    distKm: h.km || 2.5, minutes: h.etaMax || 15, distToStore: 1.0,
+    rivals: 0, _hub: true,
+  };
+}
+function captainStatusHub(o, status) {
+  return { id: o.id, number: o.number, status: status, captainId: 'cap-self', captainName: (window.CAPTAIN && CAPTAIN.fullName) || 'الكابتن' };
+}
+
 function App() {
   const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const theme = React.useMemo(() => makeTheme(tw), [tw]);
@@ -216,9 +234,9 @@ function App() {
     return () => window.removeEventListener('pointerdown', unlock);
   }, []);
 
-  // auto-offer a demo order shortly after going online (once)
+  // auto-offer a demo order shortly after going online (once) — skipped when the live hub is connected
   React.useEffect(() => {
-    if (online && !active && !incoming && !autoRef.current) {
+    if (online && !active && !incoming && !autoRef.current && !(window.SonbolHub && SonbolHub.connected)) {
       autoRef.current = true;
       const id = setTimeout(() => { if (!active) setIncoming(makeIncomingOrder()); }, 3500);
       return () => clearTimeout(id);
@@ -226,9 +244,28 @@ function App() {
     if (!online) autoRef.current = false;
   }, [online, active]);
 
+  // استقبال الطلبات الجاهزة من المطعم عبر الـ hub
+  const hubOffered = React.useRef({});
+  React.useEffect(() => {
+    if (!window.SonbolHub) return;
+    function handle(h) {
+      if (!h || !h.id) return;
+      if (h.status === 'ready' && !h.captainId && online && !active && !incoming && !hubOffered.current[h.id]) {
+        hubOffered.current[h.id] = true;
+        setIncoming(captainFromHub(h)); // يشغّل التنبيه الصوتي عبر تأثير incoming
+      }
+    }
+    const off1 = SonbolHub.on('order', handle);
+    const off2 = SonbolHub.on('init', (list) => list.forEach(handle));
+    SonbolHub.connect();
+    return () => { off1 && off1(); off2 && off2(); };
+  }, [online, active, incoming]);
+
   const simulate = () => { primeAudio(); if (!active) setIncoming(makeIncomingOrder()); };
   const accept = () => {
-    setActive(incoming); setIncoming(null); setStageIdx(0); setView('delivery'); setOnline(true);
+    const ord = incoming;
+    setActive(ord); setIncoming(null); setStageIdx(0); setView('delivery'); setOnline(true);
+    if (window.SonbolHub && ord) SonbolHub.publish(captainStatusHub(ord, 'onway')); // استلمه الكابتن → في الطريق
   };
   const advance = () => {
     setStageIdx(i => {
@@ -237,6 +274,7 @@ function App() {
     });
   };
   const finishDelivery = () => {
+    if (window.SonbolHub && active) SonbolHub.publish(captainStatusHub(active, 'delivered')); // تم التسليم للزبون
     setActive(null); setStageIdx(0); setView('tabs'); setTab('home'); autoRef.current = false;
   };
   const cancelOrder = () => setConfirm({

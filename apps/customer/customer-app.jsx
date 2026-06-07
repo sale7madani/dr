@@ -26,6 +26,24 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "font": "Tajawal"
 }/*EDITMODE-END*/;
 
+/* ===== جسر ناقل الأحداث (Hub) — يحوّل طلب الزبون لصيغة المنصّة المشتركة ===== */
+function customerToHub(o){
+  const r = SB.findRestaurant(o.restaurants[0]) || {};
+  const items = [];
+  o.groups.forEach((g) => g.items.forEach((it) => items.push({ name: it.name, qty: it.qty, price: it.unit })));
+  return {
+    id: o.id, number: o.number, status: o.status,
+    restaurantId: o.restaurants[0], restaurantName: o.restaurantNames.join("، "),
+    restaurantArea: r.area || "", restaurantPhone: r.phone || "",
+    customerName: SB.USER.name, customerPhone: SB.USER.phone,
+    customerArea: SB.addrText(o.address), address: SB.addrText(o.address),
+    items, itemsCount: o.itemsCount, subtotal: o.subtotal, deliveryFee: o.fee, total: o.total,
+    payMethod: o.payMethod, paid: o.paid, note: o.restNote || "",
+    km: r.km || null, etaMin: o.etaMin, etaMax: o.etaMax,
+    origin: "customer", createdAt: o.placedAt,
+  };
+}
+
 function App(){
   const saved = useRef(loadState()).current;
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
@@ -52,6 +70,27 @@ function App(){
   useEffect(() => {
     localStorage.setItem(LS, JSON.stringify({ authed, stack, cart, orders, addrList, addrId }));
   }, [authed, stack, cart, orders, addrList, addrId]);
+
+  /* استقبال تحديثات حالة الطلب الحيّة من باقي الواجهات (المطعم/الكابتن/الإدارة) */
+  useEffect(() => {
+    if (!window.SonbolHub) return;
+    function apply(h){
+      if (!h || !h.id) return;
+      setOrders((prev) => {
+        if (!prev.some((o) => o.id === h.id)) return prev; // فقط طلباتي
+        return prev.map((o) => {
+          if (o.id !== h.id) return o;
+          let st = h.status;
+          if (!SB.STATUS[st]) st = o.status; // تجاهل الحالات التي لا تعرفها واجهة الزبون (rejected/canceled)
+          return { ...o, status: st, captainName: h.captainName || o.captainName };
+        });
+      });
+    }
+    const off1 = SonbolHub.on("order", apply);
+    const off2 = SonbolHub.on("init", (list) => list.forEach(apply));
+    SonbolHub.connect();
+    return () => { off1 && off1(); off2 && off2(); };
+  }, []);
 
   useEffect(() => {
     function fit(){ setScale(Math.min((window.innerHeight - 24) / 858, (window.innerWidth - 24) / 402, 1.05)); }
@@ -117,6 +156,7 @@ function App(){
     setOrders((prev) => [order, ...prev]);
     setCart([]); setRestNote("");
     setStack([{ name: "home" }, { name: "placed", oid: order.id }]);
+    if (window.SonbolHub) SonbolHub.publish(customerToHub(order)); // أرسل الطلب للمطعم/الإدارة فوراً
   }
 
   function advanceOrder(oid){

@@ -5,6 +5,9 @@ node_modules/
 .vscode/
 .idea/
 
+# Hub runtime state (regenerated at runtime)
+server/hub-state.json
+
 # Heavy media — keep out of git (use external storage / git-lfs if needed)
 *.mp4
 *.MP4

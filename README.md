@@ -10,17 +10,53 @@ step**; just serve the folder statically and open it.
 
 ## التشغيل · Running
 
+شغّل المنصّة كلها بأمر واحد (يحتاج Node ≥ 16). الخادم يخدم كل الواجهات **ويربطها حيّاً**
+عبر ناقل أحداث (SSE)، فالطلب الذي ينشئه الزبون يصل فوراً للمطعم والكابتن والإدارة.
+
+Run the whole platform with one command (needs Node ≥ 16). The server hosts every
+app **and wires them together live** via an SSE event bus — an order placed by the
+customer instantly reaches the restaurant, captain and admin.
+
 ```bash
 # من جذر المشروع · from the repo root
-python3 -m http.server 8000
-# ثم افتح · then open  http://localhost:8000/   (لوحة التشغيل · launcher)
+npm start            # = node server/server.js
+# ثم افتح · then open  http://localhost:5173/   (لوحة التشغيل · launcher)
 ```
 
-> لا يعمل عبر `file://` لأن المتصفح يمنع تحميل ملفات `.jsx` الخارجية — استخدم خادمًا
-> محليًا. Won't work over `file://` (browser blocks external `.jsx`) — use a local server.
+**جرّب التدفّق الكامل · try the full flow:** افتح كل واجهة في تبويب: الزبون والمطعم
+والكابتن والإدارة. أنشئ طلباً من الزبون → سيرنّ صوت في المطعم → اقبله وحضّره وعلّمه
+«جاهز» → سيصل للكابتن → اقبله وسلّمه → الحالة تتحدّث عند الزبون والإدارة لحظياً.
+
+> لا يعمل عبر `file://` (المتصفح يمنع `.jsx` و`EventSource`). التشغيل عبر خادم Node
+> أعلاه هو الطريقة الصحيحة. تشغيل ساكن بسيط (بدون الربط الحيّ) ممكن بـ
+> `python3 -m http.server` لكن لن تتواصل الواجهات.
 
 `index.html` في الجذر هو **لوحة تشغيل موحّدة** فيها روابط لكل الواجهات والتوثيق.
 The root `index.html` is a **launcher** linking to every app and doc.
+
+## الربط الحيّ بين الواجهات · Live integration (the hub)
+
+| الملف · File | الدور · Role |
+| --- | --- |
+| `server/server.js` | خادم Node بلا تبعيات: يخدم الملفات + ناقل أحداث SSE + حفظ الحالة · zero-dep Node server: static files + SSE event bus + state persistence |
+| `shared/hub-client.js` | عميل المتصفح `window.SonbolHub` (connect/publish/on) · browser client |
+
+**دورة حياة الطلب (موحّدة) · unified order lifecycle:**
+`unpaid → processing → new → preparing → ready → onway → delivered` (+ `rejected`/`canceled`)
+
+**من يملك كل انتقال · who owns each transition:**
+- الزبون · Customer: إنشاء الطلب (`processing`/`unpaid`)
+- المطعم · Restaurant: `preparing` · `ready` · `rejected`
+- الكابتن · Captain: `onway` (استلمه) · `delivered`
+- الإدارة · Admin: تأكيد الدفع · تعيين كابتن · إلغاء — وعرض كل شيء حيّاً
+
+كل تطبيق يحوّل بين «الطلب المشترك» وشكله الداخلي عبر دوال محوّل (adapters) داخل ملفه.
+الخادم يحفظ حالة الطلبات في `server/hub-state.json` (مُستثنى من Git) مع **حارس ترتيب**
+يمنع رجوع الحالة للخلف.
+
+**حدود حالية · current limitations:** واجهة الزبون لا تعرض حالتي `rejected`/`canceled`
+(غير موجودتين في خريطة حالاتها) فتتجاهلهما؛ تبقى مرئية في المطعم والإدارة. الطلب متعدّد
+المطاعم يُرسَل كطلب واحد مُجمّع في العرض الحيّ.
 
 ## الهيكل · Layout
 

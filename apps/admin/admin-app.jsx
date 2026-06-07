@@ -19,6 +19,36 @@ const SECTION_META = {
   settings:    { t: "الإعدادات", s: "إعدادات المنصّة المالية والتشغيلية" },
 };
 
+/* ===== جسر ناقل الأحداث (Hub) ===== */
+function adminFromHub(h){
+  return {
+    id: h.id, number: h.number,
+    status: h.status === "rejected" ? "canceled" : h.status,
+    rid: h.restaurantId || "", restaurant: h.restaurantName || "—", restGrad: "linear-gradient(135deg,#b8742a,#8f561a)",
+    uid: null, customer: h.customerName || "—", custPhone: h.customerPhone || "", area: h.customerArea || h.address || "—",
+    captainId: h.captainId || null, captain: h.captainName || null,
+    items: (h.items || []).map((i) => ({ name: i.name, price: i.price || 0, qty: i.qty || 1 })),
+    itemCount: h.itemsCount || (h.items || []).reduce((s, i) => s + (i.qty || 0), 0),
+    subtotal: h.subtotal || 0, delivery: h.deliveryFee || 0, total: h.total || 0,
+    commission: Math.round((h.subtotal || 0) * 0.15), km: h.km || 0,
+    payment: h.payMethod || "online", payStatus: h.paid ? "verified" : "unpaid", payRef: "HUB-" + (h.number || ""),
+    createdAt: h.createdAt || Date.now(), note: h.note || "",
+    rejectReason: h.status === "rejected" ? "رفض المطعم الطلب" : null, issue: null, _hub: true,
+  };
+}
+function adminToHub(o, status){
+  return {
+    id: o.id, number: o.number, status: status || o.status,
+    restaurantId: o.rid, restaurantName: o.restaurant, restaurantArea: o.area,
+    customerName: o.customer, customerPhone: o.custPhone, customerArea: o.area, address: o.area,
+    items: (o.items || []).map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+    itemsCount: o.itemCount, subtotal: o.subtotal, deliveryFee: o.delivery, total: o.total,
+    payMethod: o.payment, paid: o.payStatus === "verified" || o.payStatus === "cash",
+    captainId: o.captainId, captainName: o.captain, km: o.km, note: o.note,
+    origin: o._hub ? undefined : "admin", createdAt: o.createdAt,
+  };
+}
+
 function App(){
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [active, setActive] = useState("overview");
@@ -76,6 +106,24 @@ function App(){
   function flash(msg, tone){ setToast({ msg, tone: tone || "ink" }); }
   useEffect(() => { if (!toast) return; const x = setTimeout(() => setToast(null), 2600); return () => clearTimeout(x); }, [toast]);
 
+  /* تدفّق الطلبات الحيّ من كل الواجهات → يظهر في لوحة الإدارة مباشرة */
+  useEffect(() => {
+    if (!window.SonbolHub) return;
+    function apply(h){
+      if (!h || !h.id) return;
+      const ao = adminFromHub(h);
+      setOrders((prev) => {
+        const i = prev.findIndex((o) => o.id === h.id);
+        if (i >= 0) { const c = prev.slice(); c[i] = { ...prev[i], ...ao }; return c; }
+        return [ao, ...prev];
+      });
+    }
+    const off1 = SonbolHub.on("order", apply);
+    const off2 = SonbolHub.on("init", (list) => list.forEach(apply));
+    SonbolHub.connect();
+    return () => { off1 && off1(); off2 && off2(); };
+  }, []);
+
   const orderDetail = orderId ? orders.find((o) => o.id === orderId) : null;
   const capDetail = capId ? captains.find((c) => c.id === capId) : null;
   const restDetail = restId ? restaurants.find((r) => r.id === restId) : null;
@@ -117,6 +165,7 @@ function App(){
     switch (type) {
       case "confirm-payment":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, status: "processing", payStatus: o.payment === "cash" ? "cash" : "verified" } : o));
+        if (window.SonbolHub) SonbolHub.publish(Object.assign(adminToHub(entity, "processing"), { paid: true }));
         flash("تم تأكيد دفع الطلب #" + entity.number + " — انتقل لقيد المعالجة", "green"); break;
       case "approve-order-pay":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, payStatus: "verified", rejectReason: null } : o));
@@ -126,12 +175,15 @@ function App(){
         flash("تم رفض وصل الطلب #" + entity.number + ": " + extra, "red"); break;
       case "dispatch":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, status: "new", captainId: extra.id, captain: extra.name } : o));
+        if (window.SonbolHub) SonbolHub.publish(Object.assign(adminToHub(entity, "new"), { captainId: extra.id, captainName: extra.name }));
         flash("تم تحويل الطلب #" + entity.number + " للمطعم وتعيين الكابتن " + extra.name, "green"); break;
       case "reassign":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, captainId: extra.id, captain: extra.name } : o));
+        if (window.SonbolHub) SonbolHub.publish({ id: entity.id, number: entity.number, captainId: extra.id, captainName: extra.name });
         flash("تم تبديل كابتن الطلب #" + entity.number + " إلى " + extra.name, "green"); break;
       case "cancel":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, status: "canceled" } : o));
+        if (window.SonbolHub) SonbolHub.publish(adminToHub(entity, "canceled"));
         setOrderId(null); flash("تم إلغاء الطلب #" + entity.number, "red"); break;
       case "contact":
         flash("جارٍ الاتصال بالكابتن " + (entity.captain || "")); break;
