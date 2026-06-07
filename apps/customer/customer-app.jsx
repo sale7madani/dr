@@ -44,13 +44,31 @@ function customerToHub(o){
   };
 }
 
+/* محوّل: طلب الباك-إند → شكل طلب الزبون لعرضه في الشاشات الحالية */
+function apiOrderToCustomer(bo, addressObj){
+  return {
+    id: String(bo.id), number: bo.number, status: bo.status,
+    restaurants: [bo.restaurantId], restaurantNames: [bo.restaurantName],
+    groups: [{ restaurantId: bo.restaurantId, items: (bo.items || []).map((i) => ({ id: i.id, name: i.name, qty: i.qty, unit: i.unit != null ? i.unit : (i.price || 0) })), subtotal: bo.subtotal }],
+    itemsCount: (bo.items || []).reduce((s, i) => s + (i.qty || 0), 0),
+    subtotal: bo.subtotal, fee: bo.deliveryFee, total: bo.total,
+    payMethod: bo.payMethod === "online" ? "تحويل بنكي" : "نقداً عند الاستلام", paid: !!bo.paid,
+    address: addressObj || { area: bo.area || "", street: "", building: "", floor: "" },
+    etaMin: bo.etaMin || 0, etaMax: bo.etaMax || 0,
+    placedAt: bo.createdAt || Date.now(), rated: 0,
+    rejectReason: bo.rejectReason || "", captainName: bo.captainName || "",
+  };
+}
+
 function App(){
   const saved = useRef(loadState()).current;
+  const apiAuthed = !!(window.SonbolAPI && SonbolAPI.authed());
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const [authed, setAuthed] = useState(() => saved ? !!saved.authed : false);
+  const [apiMode, setApiMode] = useState(apiAuthed); // متصل بالباك-إند الحقيقي؟
+  const [authed, setAuthed] = useState(() => apiAuthed || (saved ? !!saved.authed : false));
   const [stack, setStack] = useState(() => (saved && saved.stack && saved.stack.length) ? saved.stack : [{ name: "home" }]);
   const [cart, setCart] = useState(() => saved ? (saved.cart || []) : []);
-  const [orders, setOrders] = useState(() => saved ? (saved.orders || SB.sampleOrders()) : SB.sampleOrders());
+  const [orders, setOrders] = useState(() => apiAuthed ? [] : (saved ? (saved.orders || SB.sampleOrders()) : SB.sampleOrders()));
   const [addrList, setAddrList] = useState(() => saved ? (saved.addrList || SB.ADDRESSES) : SB.ADDRESSES);
   const [addrId, setAddrId] = useState(() => saved ? (saved.addrId || SB.ADDRESSES[0].id) : SB.ADDRESSES[0].id);
   const [restNote, setRestNote] = useState("");
@@ -71,9 +89,9 @@ function App(){
     localStorage.setItem(LS, JSON.stringify({ authed, stack, cart, orders, addrList, addrId }));
   }, [authed, stack, cart, orders, addrList, addrId]);
 
-  /* استقبال تحديثات حالة الطلب الحيّة من باقي الواجهات (المطعم/الكابتن/الإدارة) */
+  /* وضع العرض (بدون باك-إند): استقبال التحديثات عبر الـ hub التجريبي */
   useEffect(() => {
-    if (!window.SonbolHub) return;
+    if (apiMode || !window.SonbolHub) return;
     function apply(h){
       if (!h || !h.id) return;
       setOrders((prev) => {
@@ -91,7 +109,30 @@ function App(){
     const off3 = SonbolHub.on("reset", () => resetDemo()); // إعادة ضبط موحّدة من أي واجهة
     SonbolHub.connect();
     return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
-  }, []);
+  }, [apiMode]);
+
+  /* الوضع الحقيقي: تحميل طلباتي + بثّ حيّ مصادق من الباك-إند */
+  useEffect(() => {
+    if (!apiMode || !window.SonbolAPI) return;
+    let alive = true;
+    SonbolAPI.listOrders().then((d) => {
+      if (!alive || !d || !d.orders) return;
+      setOrders((prev) => {
+        const have = new Set(prev.map((o) => o.id));
+        const mapped = d.orders.map((o) => apiOrderToCustomer(o, null)).filter((o) => !have.has(o.id));
+        return [...mapped, ...prev];
+      });
+    }).catch(() => {});
+    const stop = SonbolAPI.connectStream({
+      onOrder: (bo) => {
+        const id = String(bo.id);
+        setOrders((prev) => prev.some((o) => o.id === id)
+          ? prev.map((o) => o.id === id ? { ...o, status: bo.status, paid: !!bo.paid, captainName: bo.captainName || o.captainName, rejectReason: bo.rejectReason || o.rejectReason } : o)
+          : [apiOrderToCustomer(bo, null), ...prev]);
+      },
+    });
+    return () => { alive = false; stop && stop(); };
+  }, [apiMode]);
 
   useEffect(() => {
     function fit(){ setScale(Math.min((window.innerHeight - 24) / 858, (window.innerWidth - 24) / 402, 1.05)); }
@@ -141,7 +182,29 @@ function App(){
   const activeOrders = orders.filter((o) => !["delivered", "cancelled", "canceled", "rejected"].includes(o.status));
 
   /* وضع الطلب */
+  async function placeOrderAPI(pay){
+    const payMethod = pay && pay.paid ? "online" : "cash";
+    try {
+      const created = [];
+      for (const g of groups) {
+        const resp = await SonbolAPI.createOrder({
+          restaurantId: g.restaurantId,
+          items: g.lines.map((l) => ({ id: l.id, qty: l.qty, mods: l.mods || {} })),
+          payMethod, address: SB.addrText(address), area: (address && address.area) || "", note: restNote || "",
+        });
+        created.push(apiOrderToCustomer(resp.order, address));
+      }
+      if (!created.length) return;
+      setOrders((prev) => [...created, ...prev]);
+      setCart([]); setRestNote("");
+      setStack([{ name: "home" }, { name: "placed", oid: created[0].id }]);
+    } catch (e) {
+      showToast(e && e.offline ? "تعذّر الاتصال بالخادم" : ("تعذّر إرسال الطلب: " + ((e && e.message) || "")));
+    }
+  }
+
   function placeOrder(pay){
+    if (apiMode && window.SonbolAPI) return placeOrderAPI(pay);
     const status = pay.paid ? "processing" : "unpaid";
     const order = {
       id: "o" + Date.now(), number: SB.newOrderNumber(),
@@ -188,6 +251,8 @@ function App(){
 
   function resetDemo(){
     localStorage.removeItem(LS);
+    if (window.SonbolAPI) SonbolAPI.logout();
+    setApiMode(false);
     setAuthed(false); setStack([{ name: "home" }]); setCart([]); setOrders(SB.sampleOrders());
     setAddrList(SB.ADDRESSES); setAddrId(SB.ADDRESSES[0].id); setRestNote(""); setItemSheet(null);
   }
@@ -196,7 +261,7 @@ function App(){
 
   /* عرض الشاشة */
   function render(){
-    if (!authed) return <AuthScreen onDone={() => { setAuthed(true); resetTo("home"); }} />;
+    if (!authed) return <AuthScreen onDone={(viaApi) => { setAuthed(true); setApiMode(!!viaApi); resetTo("home"); }} />;
     switch (cur.name){
       case "home":
         return <HomeScreen restaurants={SB.RESTAURANTS} onOpenRest={(r) => go({ name: "restaurant", rid: r.id })}
@@ -285,7 +350,8 @@ function App(){
         </div>
       </div>
 
-      {/* شريط المحاكاة (يحاكي لوحة التحكم) */}
+      {/* شريط المحاكاة — وضع العرض فقط (يختفي في الوضع الحقيقي) */}
+      {!apiMode && (
       <div className="demobar">
         <span className="dl">محاكاة لوحة التحكم:<br /><b>{trackOrder ? SB.STATUS[trackOrder.status].label : (activeOrders[0] ? SB.STATUS[activeOrders[0].status].label : "لا طلب نشط")}</b></span>
         {(() => {
@@ -297,6 +363,7 @@ function App(){
         })()}
         <button className="demo-reset" onClick={() => { resetDemo(); if (window.SonbolHub) SonbolHub.reset(); }}>إعادة ضبط</button>
       </div>
+      )}
 
       <TweaksPanel title="التحكم">
         <TweakSection label="الخط" />

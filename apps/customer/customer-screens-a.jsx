@@ -4,8 +4,30 @@
 
 /* ===================== تسجيل الدخول ===================== */
 function AuthScreen({ onDone }){
+  const [mode, setMode] = useState("login");   // login | register
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const ok = phone.replace(/\D/g, "").length >= 9;
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const hasAPI = !!window.SonbolAPI;
+  const phoneOk = phone.replace(/\D/g, "").length >= 4;
+  const ok = phoneOk && password.length >= 6 && (mode === "login" || name.trim().length >= 2);
+
+  async function submit(){
+    if (!ok || busy || !hasAPI) return;
+    setBusy(true); setErr("");
+    try {
+      if (mode === "login") await SonbolAPI.login(phone.trim(), password);
+      else await SonbolAPI.register({ role: "customer", name: name.trim(), phone: phone.trim(), password });
+      onDone(true);
+    } catch (e) {
+      setErr(e && e.offline ? "تعذّر الاتصال بالخادم — جرّب الدخول التجريبي" :
+        (e && e.status === 401 ? "رقم الجوال أو كلمة المرور غير صحيحة" :
+        (e && e.status === 409 ? "رقم الجوال مسجّل مسبقاً" : (e && e.message) || "حدث خطأ، حاول مجدداً")));
+    } finally { setBusy(false); }
+  }
+
   return (
     <div className="screen">
       <div className="auth">
@@ -14,6 +36,15 @@ function AuthScreen({ onDone }){
           <div className="a-tag">اطلب وجبتك المفضلة من أفضل مطاعم غزة وتابع توصيلها لحظة بلحظة.</div>
         </div>
         <div className="a-form">
+          {mode === "register" && (
+            <div>
+              <div className="field-l">الاسم</div>
+              <div className="inp">
+                <span className="i-ic"><Ic.user s={20} /></span>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسمك الكامل" />
+              </div>
+            </div>
+          )}
           <div>
             <div className="field-l">رقم الجوال</div>
             <div className="inp ltr">
@@ -21,12 +52,24 @@ function AuthScreen({ onDone }){
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05xx xxx xxx" inputMode="tel" />
             </div>
           </div>
-          <button className="btn btn-gold btn-block btn-lg" style={{ opacity: ok ? 1 : .5, pointerEvents: ok ? "auto" : "none", marginTop: 2 }}
-            onClick={() => onDone()}>
-            إرسال رمز التحقق <Ic.chevL s={20} />
+          <div>
+            <div className="field-l">كلمة المرور</div>
+            <div className="inp">
+              <span className="i-ic"><Ic.lock s={20} /></span>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="٦ أحرف على الأقل" onKeyDown={(e) => e.key === "Enter" && submit()} />
+            </div>
+          </div>
+          {err && <div style={{ color: "#d6342c", fontSize: 13, fontWeight: 700, textAlign: "center" }}>{err}</div>}
+          <button className="btn btn-gold btn-block btn-lg"
+            style={{ opacity: ok && !busy ? 1 : .5, pointerEvents: ok && !busy ? "auto" : "none", marginTop: 2 }}
+            onClick={submit}>
+            {busy ? "جارٍ…" : (mode === "login" ? "تسجيل الدخول" : "إنشاء حساب")} <Ic.chevL s={20} />
           </button>
-          <div className="a-alt">بالمتابعة فأنت توافق على <b>الشروط</b> و<b>سياسة الخصوصية</b></div>
-          <button className="btn btn-line btn-block" onClick={() => onDone()}>الدخول بحساب تجريبي</button>
+          <div className="a-alt" style={{ cursor: "pointer" }} onClick={() => { setErr(""); setMode(mode === "login" ? "register" : "login"); }}>
+            {mode === "login" ? <>ليس لديك حساب؟ <b>أنشئ حساباً</b></> : <>لديك حساب؟ <b>تسجيل الدخول</b></>}
+          </div>
+          <button className="btn btn-line btn-block" onClick={() => onDone(false)}>الدخول بحساب تجريبي (بدون خادم)</button>
         </div>
       </div>
     </div>
