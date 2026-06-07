@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>سنبل — اطلب أكلك المفضّل من مطاعم غزة</title>
+<meta name="description" content="سنبل: تطبيق توصيل الطلبات في غزة. اطلب من مطاعمك المفضّلة، تابع طلبك مباشرة، وادفع كاش أو تحويل. توصيل سريع لكل أحياء غزة." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="landing.css" />
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a href="#top" class="brand" aria-label="سنبل">
+      <span class="mark">
+        <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true" style="color:#fff;">
+          <rect x="15" y="13" width="2.2" height="16" rx="1.1"/>
+          <ellipse cx="16" cy="6.4" rx="3" ry="5"/>
+          <ellipse cx="9" cy="12.6" rx="2.5" ry="4.3" transform="rotate(-34 9 12.6)"/>
+          <ellipse cx="23" cy="12.6" rx="2.5" ry="4.3" transform="rotate(34 23 12.6)"/>
+          <ellipse cx="9" cy="18.6" rx="2.5" ry="4.3" transform="rotate(-34 9 18.6)"/>
+          <ellipse cx="23" cy="18.6" rx="2.5" ry="4.3" transform="rotate(34 23 18.6)"/>
+        </svg>
+      </span>
+      <span class="word"><b>سنبل</b><small>SONBOL</small></span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">المميزات</a>
+      <a href="#how">كيف بيشتغل</a>
+      <a href="#rests">المطاعم</a>
+      <a href="#areas">المناطق</a>
+      <a href="#join">للشركاء</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-gold" href="../customer/واجهة%20الزبون%20-%20سنبل.html">ابدأ الطلب</a>
+      <button class="menu-btn" id="menuBtn" aria-label="القائمة">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero" id="top">
+  <div class="hero-bg"><span class="glow g1"></span><span class="glow g2"></span></div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow reveal"><span class="dot"></span>توصيل الطلبات في غزة</span>
+      <h1 class="reveal d1">أكلك المفضّل<br><span class="grad-text">واصلك لباب البيت</span></h1>
+      <p class="lead reveal d2">اطلب من أحلى مطاعم غزة، تابع طلبك لحظة بلحظة، وادفع كاش أو تحويل. كل اللي بتشتهيه بمكان واحد — مع سنبل.</p>
+      <div class="hero-actions reveal d3">
+        <a class="btn btn-gold btn-lg" href="../customer/واجهة%20الزبون%20-%20سنبل.html">ابدأ الطلب الآن</a>
+        <a class="btn btn-line btn-lg" href="#how">كيف بيشتغل؟</a>
+      </div>
+      <div class="hero-trust reveal d4">
+        <div class="t-item">
+          <div>
+            <div class="t-num grad-text">٩</div>
+          </div>
+          <div class="t-lbl">أحياء مغطّاة<br>بكل غزة</div>
+        </div>
+        <span class="t-sep"></span>
+        <div class="t-item">
+          <div><div class="t-num grad-text">⚡</div></div>
+          <div class="t-lbl">توصيل سريع<br>بنفس اليوم</div>
+        </div>
+        <span class="t-sep"></span>
+        <div class="t-item">
+          <div><div class="t-num grad-text">PWA</div></div>
+          <div class="t-lbl">بدون تحميل<br>افتحه من المتصفح</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone mockup -->
+    <div class="hero-visual reveal d2">
+      <div class="float-chip fc-1">
+        <span class="fc-ic ic-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span><small>تم توصيل طلبك</small><b>BIRDS &amp; BUNS</b></span>
+      </div>
+      <div class="float-chip fc-2">
+        <span class="fc-ic ic-gold"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M5 12l5-5M5 12l5 5"/></svg></span>
+        <span><small>الكابتن بالطريق</small><b>١٢ دقيقة</b></span>
+      </div>
+      <div class="float-chip fc-3">
+        <span class="fc-ic ic-red"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.6-9.3-9C1.2 8.6 3 5 6.5 5 8.5 5 10 6.2 12 8.5 14 6.2 15.5 5 17.5 5 21 5 22.8 8.6 21.3 12 19 16.4 12 21 12 21Z"/></svg></span>
+        <span><small>مطاعمك المفضّلة</small><b>بإيدك دائماً</b></span>
+      </div>
+
+      <div class="phone-scale">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="phone-screen">
+            <!-- status bar -->
+            <div class="mk-sb">
+              <span class="tnum">٤:١٨</span>
+              <span class="sb-r">
+                <span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span>
+                <svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.6c2 0 3.8.8 5.1 2L14.4 3.3C12.7 1.6 10.4.6 8 .6S3.3 1.6 1.6 3.3L2.9 4.6C4.2 3.4 6 2.6 8 2.6Z"/><path d="M8 6c1.1 0 2.1.4 2.8 1.2l1.3-1.3C11 4.8 9.6 4.2 8 4.2s-3 .6-4.1 1.7l1.3 1.3C5.9 6.4 6.9 6 8 6Z"/><circle cx="8" cy="9.4" r="1.6"/></svg>
+                <span class="batt"></span>
+              </span>
+            </div>
+            <!-- gold header -->
+            <div class="mk-head">
+              <div class="mk-search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+              </div>
+              <div class="mk-logo"><b>سنبل</b><small>SONBOL</small></div>
+              <div class="mk-spacer"></div>
+            </div>
+            <!-- content -->
+            <div class="mk-scroll">
+              <div class="mk-sech">
+                <span class="more">الكل</span>
+                <span class="t">اطلب مرة ثانية ⟳</span>
+              </div>
+              <div class="mk-reorder">
+                <div class="mk-rcard">
+                  <div class="ro-l">
+                    <div class="ro-name">BIRDS &amp; BUNS</div>
+                    <div class="ro-meta">١٠ أصناف · ٢٦٠ ₪</div>
+                    <div class="ro-again">↻ أعد الطلب</div>
+                  </div>
+                  <div class="ro-logo" style="background:linear-gradient(135deg,#c92a2a,#9e1f1f)">B&amp;B</div>
+                </div>
+                <div class="mk-rcard">
+                  <div class="ro-l">
+                    <div class="ro-name">PIZZA ROOM</div>
+                    <div class="ro-meta">٢ صنف · ٨٠ ₪</div>
+                    <div class="ro-again">↻ أعد الطلب</div>
+                  </div>
+                  <div class="ro-logo" style="background:linear-gradient(135deg,#b83227,#8f231a)">PZ</div>
+                </div>
+              </div>
+
+              <div class="mk-sech">
+                <span></span>
+                <span class="t">وش بتشتهي اليوم؟ 🍴</span>
+              </div>
+
+              <div class="mk-rest">
+                <div class="mk-cover" style="background:linear-gradient(135deg,#c0392b,#8e2820);color:#f3d9a8">
+                  <span class="cv-open">مفتوح الآن</span>
+                  <div><div class="cv-name" style="font-family:'Tajawal'">PIZZA ROOM</div><div class="cv-sub">بيتزا روم</div></div>
+                </div>
+                <div class="mk-rest-in">
+                  <span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span>
+                  <div class="rc-l">
+                    <div class="rc-name">PIZZA ROOM</div>
+                    <div class="rc-cuis">بيتزا وباستا وكاليزوني</div>
+                    <div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">٣٠–٤٥ د ⏱</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mk-rest">
+                <div class="mk-cover" style="background:linear-gradient(135deg,#fbc52a,#f3a712);color:#5a3d00">
+                  <span class="cv-open">مفتوح الآن</span>
+                  <div><div class="cv-name">SANDWICH HUB</div><div class="cv-sub">ساندويتش هَب</div></div>
+                </div>
+                <div class="mk-rest-in">
+                  <span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span>
+                  <div class="rc-l">
+                    <div class="rc-name">SANDWICH HUB</div>
+                    <div class="rc-cuis">ساندويتشات ووجبات دجاج</div>
+                    <div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">٢٥–٤٠ د ⏱</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- tab bar -->
+            <div class="mk-tab">
+              <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>حسابي</div>
+              <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M7 4h10l1 4H6l1-4Z"/><path d="M6 8v11a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8"/></svg>طلباتي</div>
+              <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 7h13l-1.4 9.5a2 2 0 0 1-2 1.7H9.4a2 2 0 0 1-2-1.7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>السلة</div>
+              <div class="tb on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.2V20a1 1 0 0 0 1 1h5v-6h6v6h5a1 1 0 0 0 1-1v-9.8L12 3Z"/></svg>الرئيسية</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== VALUE BAND ===================== -->
+<section class="band">
+  <div class="wrap band-in">
+    <div class="st"><b>توصيل لكل غزة</b><span>كباتن سنبل بكل الأحياء</span></div>
+    <div class="st"><b>كاش أو تحويل</b><span>ادفع بالطريقة اللي بتريحك</span></div>
+    <div class="st"><b>تتبّع مباشر</b><span>تابع طلبك لين يوصل</span></div>
+    <div class="st"><b>مطاعم مختارة</b><span>أحلى مطاعم غزة بمكان واحد</span></div>
+  </div>
+</section>
+
+<!-- ===================== FEATURES ===================== -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>ليش سنبل</span>
+      <h2>كل شي اللي بتحتاجه عشان تطلب براحتك</h2>
+      <p>صمّمنا سنبل عشان تجربة طلب سهلة وسريعة — من أول ما تفتح التطبيق لين يوصلك الطلب ع الباب.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat reveal">
+        <div class="f-ic ic-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h11V6H3v7Z"/><path d="M14 9h4l3 3v1h-7V9Z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></div>
+        <h3>توصيل سريع</h3>
+        <p>كباتن سنبل بكل أحياء غزة، يوصّلوك طلبك بأسرع وقت وبنفس اليوم.</p>
+      </div>
+      <div class="feat reveal d1">
+        <div class="f-ic ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+        <h3>تتبّع مباشر</h3>
+        <p>تابع طلبك خطوة بخطوة — من تأكيد المطعم لحد ما يوصل باب بيتك.</p>
+      </div>
+      <div class="feat reveal d2">
+        <div class="f-ic ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M16 15h2"/></svg></div>
+        <h3>دفع مرن</h3>
+        <p>ادفع كاش عند الاستلام أو حوّل بنكياً — وارفِق إيصال التحويل بسهولة.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="f-ic ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5 12 12l9-4.5L12 3Z"/><path d="M3 12.5 12 17l9-4.5"/><path d="M3 17 12 21.5 21 17"/></svg></div>
+        <h3>اطلب من أكثر من مطعم</h3>
+        <p>جمّع طلباتك من كذا مطعم بسلة وحدة، وأكمل الدفع مرة وحدة.</p>
+      </div>
+      <div class="feat reveal d1">
+        <div class="f-ic ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 4v4h-4"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 20v-4h4"/></svg></div>
+        <h3>أعِد طلبك بضغطة</h3>
+        <p>طلباتك المفضّلة محفوظة — أعِد أي طلب سابق بضغطة وحدة بدون عناء.</p>
+      </div>
+      <div class="feat reveal d2">
+        <div class="f-ic ic-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9L12 3Z"/></svg></div>
+        <h3>تقييمات موثوقة</h3>
+        <p>شوف تقييمات الناس للمطاعم واختار الأفضل بثقة قبل ما تطلب.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>بثلاث خطوات</span>
+      <h2>كيف بيشتغل سنبل؟</h2>
+      <p>من اختيار المطعم لحد ما يوصلك الطلب — كل شي بثلاث خطوات بسيطة.</p>
+    </div>
+    <div class="steps">
+      <span class="dash"></span>
+      <div class="step reveal">
+        <div class="s-num">١<span class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></span></div>
+        <h3>اختَر مطعمك</h3>
+        <p>تصفّح مطاعم غزة وشوف وش بتشتهي — بيتزا، برجر، مشاوي، حلويات وأكثر.</p>
+      </div>
+      <div class="step reveal d1">
+        <div class="s-num">٢<span class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h13l-1.4 9.5a2 2 0 0 1-2 1.7H9.4a2 2 0 0 1-2-1.7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span></div>
+        <h3>اطلب وحدّد عنوانك</h3>
+        <p>أضِف اللي يعجبك للسلة، اختَر حيّك بغزة، وأكّد طريقة الدفع المناسبة.</p>
+      </div>
+      <div class="step reveal d2">
+        <div class="s-num">٣<span class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h11V6H3v7Z"/><path d="M14 9h4l3 3v1h-7V9Z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span></div>
+        <h3>تتبّع لين يوصل</h3>
+        <p>تابع حالة طلبك مباشرة، وكابتن سنبل بيوصّلك ع الباب بأسرع وقت.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RESTAURANTS ===================== -->
+<section class="rests" id="rests">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>المطاعم الشريكة</span>
+      <h2>أحلى مطاعم غزة بمكان واحد</h2>
+      <p>تشكيلة واسعة من المطاعم والكافيهات تغطّي كل ما تشتهيه — وبتكبر كل يوم.</p>
+    </div>
+    <div class="rest-row">
+      <article class="rcard reveal">
+        <div class="rc-cover" style="background:linear-gradient(135deg,#c0392b,#8e2820)"><span class="stripes"></span><span class="rc-open">مفتوح الآن</span><div class="cv-label"><span class="ph">شعار المطعم</span><b>بيتزا وباستا</b></div></div>
+        <div class="rc-body"><span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span><div class="rc-info"><div class="rc-name">بيتزا وباستا</div><div class="rc-cuis">أكلات إيطالية وكاليزوني</div><div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">٣٠–٤٥ د ⏱</span></div></div></div>
+      </article>
+      <article class="rcard reveal d1">
+        <div class="rc-cover" style="background:linear-gradient(135deg,#fbc52a,#f3a712)"><span class="stripes"></span><span class="rc-open">مفتوح الآن</span><div class="cv-label" style="color:#5a3d00"><span class="ph" style="color:#5a3d00">شعار المطعم</span><b>برجر ودجاج</b></div></div>
+        <div class="rc-body"><span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span><div class="rc-info"><div class="rc-name">برجر ودجاج</div><div class="rc-cuis">برجر ودجاج مقرمش</div><div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">٢٥–٤٠ د ⏱</span></div></div></div>
+      </article>
+      <article class="rcard reveal d2">
+        <div class="rc-cover" style="background:linear-gradient(135deg,#1f9d55,#157a41)"><span class="stripes"></span><span class="rc-open">مفتوح الآن</span><div class="cv-label"><span class="ph">شعار المطعم</span><b>مشاوي ومناقيش</b></div></div>
+        <div class="rc-body"><span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span><div class="rc-info"><div class="rc-name">مشاوي ومناقيش</div><div class="rc-cuis">مشاوي على الفحم وفطائر</div><div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">٣٥–٥٠ د ⏱</span></div></div></div>
+      </article>
+      <article class="rcard reveal">
+        <div class="rc-cover" style="background:linear-gradient(135deg,#7d3cc0,#5e2a93)"><span class="stripes"></span><span class="rc-open">مفتوح الآن</span><div class="cv-label"><span class="ph">شعار المطعم</span><b>حلويات وكيك</b></div></div>
+        <div class="rc-body"><span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span><div class="rc-info"><div class="rc-name">حلويات وكيك</div><div class="rc-cuis">حلويات شرقية وكيك</div><div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">٢٠–٣٥ د ⏱</span></div></div></div>
+      </article>
+      <article class="rcard reveal d1">
+        <div class="rc-cover" style="background:linear-gradient(135deg,#2f74c0,#235a96)"><span class="stripes"></span><span class="rc-open">مفتوح الآن</span><div class="cv-label"><span class="ph">شعار المطعم</span><b>مشروبات وعصائر</b></div></div>
+        <div class="rc-body"><span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span><div class="rc-info"><div class="rc-name">مشروبات وعصائر</div><div class="rc-cuis">عصائر طازة ومشروبات</div><div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">١٥–٣٠ د ⏱</span></div></div></div>
+      </article>
+      <article class="rcard reveal d2">
+        <div class="rc-cover" style="background:linear-gradient(135deg,#2a2722,#454039)"><span class="stripes"></span><span class="rc-open">مفتوح الآن</span><div class="cv-label"><span class="ph">شعار المطعم</span><b>وجبات سريعة</b></div></div>
+        <div class="rc-body"><span class="rc-rate" style="background:#e4f6ec;color:#157a41">★ ٥</span><div class="rc-info"><div class="rc-name">وجبات سريعة</div><div class="rc-cuis">ساندويتشات ووجبات سريعة</div><div class="rc-meta"><span class="m">٨ ₪ 🛵</span><span class="m">٢٥–٤٠ د ⏱</span></div></div></div>
+      </article>
+    </div>
+    <p class="rest-note reveal">صور وأسماء المطاعم تُعرض كنماذج — <b>مطاعمك المفضّلة بغزة تنضمّ لسنبل تباعاً.</b></p>
+  </div>
+</section>
+
+<!-- ===================== AREAS ===================== -->
+<section class="areas" id="areas">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>نغطّي غزة</span>
+      <h2>سنبل بيوصلك وين ما كنت</h2>
+      <p>كباتننا بيغطّوا أحياء غزة الرئيسية — اطلب من حيّك وإحنا نوصّلك.</p>
+    </div>
+    <div class="area-grid reveal d1">
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>الرمال</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>تل الهوا</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>النصر</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>الشيخ رضوان</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>الزيتون</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>الصبرة</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>الدرج</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>التفاح</span>
+      <span class="area-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>الشجاعية</span>
+    </div>
+    <div class="area-foot reveal d2"><span>حيّك مش موجود؟ <b>عمّا نتوسّع باستمرار</b></span></div>
+  </div>
+</section>
+
+<!-- ===================== JOIN (PARTNERS) ===================== -->
+<section class="join" id="join">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>كن جزء من سنبل</span>
+      <h2>عندك مطعم أو بدك تشتغل كابتن؟</h2>
+      <p>انضمّ لعائلة سنبل ووصّل خدمتك لكل غزة — سجّل اهتمامك وفريقنا بيتواصل معك.</p>
+    </div>
+    <div class="join-grid">
+      <div class="join-card rest reveal">
+        <span class="jc-deco"></span>
+        <div class="jc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg></div>
+        <h3>ضمّ مطعمك لسنبل</h3>
+        <p>وصّل قائمتك لآلاف الزبائن بغزة، استقبل الطلبات بسهولة، وكبّر مبيعاتك مع سنبل.</p>
+        <div class="jc-cta"><a class="btn" href="https://instagram.com/sonbolapp" target="_blank" rel="noopener">سجّل مطعمك</a></div>
+      </div>
+      <div class="join-card cap reveal d1">
+        <span class="jc-deco"></span>
+        <div class="jc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h11V6H3v7Z"/><path d="M14 9h4l3 3v1h-7V9Z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></div>
+        <h3>اشتغل كابتن توصيل</h3>
+        <p>اشتغل بوقتك المناسب، وصّل الطلبات لأهل غزة، واكسب دخل إضافي مع فريق سنبل.</p>
+        <div class="jc-cta"><a class="btn" href="https://instagram.com/sonbolapp" target="_blank" rel="noopener">انضمّ كابتن</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DOWNLOAD / PWA ===================== -->
+<section class="download">
+  <div class="wrap">
+    <div class="dl-card reveal">
+      <span class="dl-deco d1"></span><span class="dl-deco d2"></span>
+      <div class="dl-copy">
+        <h2>جاهز تطلب؟ سنبل بإيدك</h2>
+        <p>افتح سنبل من المتصفح مباشرة — بدون تحميل. وأضِفه لشاشتك الرئيسية ليصير زي أي تطبيق.</p>
+        <div class="dl-actions">
+          <a class="btn btn-ink btn-lg" href="../customer/واجهة%20الزبون%20-%20سنبل.html">افتح التطبيق الآن</a>
+          <a class="btn btn-ghost-light btn-lg" href="#how" style="color:#191713;border-color:rgba(25,23,19,.25);background:rgba(255,255,255,.35)">كيف بيشتغل؟</a>
+        </div>
+        <div class="pwa-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/><path d="M5 20h14"/></svg>
+          من قائمة المتصفح اختَر «أضِف إلى الشاشة الرئيسية»
+        </div>
+      </div>
+      <div class="dl-visual">
+        <div class="qr-card">
+          <div style="width:150px;height:150px;border-radius:20px;background:linear-gradient(135deg,#fbc52a,#f3a712);display:grid;place-items:center;box-shadow:0 10px 24px rgba(221,158,0,.4);margin:0 auto">
+            <svg viewBox="0 0 32 32" fill="#fff" width="78" height="78" aria-hidden="true">
+              <rect x="15" y="13" width="2.2" height="16" rx="1.1"/>
+              <ellipse cx="16" cy="6.4" rx="3" ry="5"/>
+              <ellipse cx="9" cy="12.6" rx="2.5" ry="4.3" transform="rotate(-34 9 12.6)"/>
+              <ellipse cx="23" cy="12.6" rx="2.5" ry="4.3" transform="rotate(34 23 12.6)"/>
+              <ellipse cx="9" cy="18.6" rx="2.5" ry="4.3" transform="rotate(-34 9 18.6)"/>
+              <ellipse cx="23" cy="18.6" rx="2.5" ry="4.3" transform="rotate(34 23 18.6)"/>
+            </svg>
+          </div>
+          <div class="qr-l"><b>سنبل</b>أضِفه لشاشتك الرئيسية</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a href="#top" class="brand">
+          <span class="mark">
+            <svg viewBox="0 0 32 32" fill="#fff" aria-hidden="true">
+              <rect x="15" y="13" width="2.2" height="16" rx="1.1"/>
+              <ellipse cx="16" cy="6.4" rx="3" ry="5"/>
+              <ellipse cx="9" cy="12.6" rx="2.5" ry="4.3" transform="rotate(-34 9 12.6)"/>
+              <ellipse cx="23" cy="12.6" rx="2.5" ry="4.3" transform="rotate(34 23 12.6)"/>
+              <ellipse cx="9" cy="18.6" rx="2.5" ry="4.3" transform="rotate(-34 9 18.6)"/>
+              <ellipse cx="23" cy="18.6" rx="2.5" ry="4.3" transform="rotate(34 23 18.6)"/>
+            </svg>
+          </span>
+          <span class="word"><b>سنبل</b><small>SONBOL</small></span>
+        </a>
+        <p>تطبيق توصيل الطلبات في غزة. اطلب من مطاعمك المفضّلة وتابع طلبك لحد ما يوصلك ع الباب.</p>
+        <div class="foot-soc">
+          <a href="https://instagram.com/sonbolapp" target="_blank" rel="noopener" aria-label="إنستغرام"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="https://facebook.com/sonbolapp" target="_blank" rel="noopener" aria-label="فيسبوك"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9V7c0-1 .5-1.5 1.7-1.5H17V2.6C16.5 2.5 15.4 2.4 14.4 2.4 11.9 2.4 10.3 4 10.3 6.6V9H8v3h2.3v9.4h3.4V12H16l.5-3H13.7Z"/></svg></a>
+          <a href="https://tiktok.com/@sonbolapp" target="_blank" rel="noopener" aria-label="تيك توك"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2.5c.4 2.3 1.8 3.9 4 4.2v3c-1.5.1-2.9-.3-4.2-1.1v6.4c0 4-3.2 6.5-6.7 5.7-2.6-.6-4.3-3-4-5.7.3-2.7 2.8-4.7 5.6-4.4v3.1c-.5-.1-1-.1-1.5 0-1.1.3-1.8 1.3-1.6 2.4.2 1 1.1 1.7 2.2 1.6 1.2-.1 2-1 2-2.3V2.5h2.2Z"/></svg></a>
+          <a href="https://wa.me/" target="_blank" rel="noopener" aria-label="واتساب"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.9.9-2.8-.2-.3A8 8 0 1 1 12 20Zm4.5-5.9c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.2.1-.2 0-.3 0-.5l-.7-1.8c-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.8.8-1 1.9-.6 3.1A11 11 0 0 0 14 17c1.2.5 2.2.4 3 .3.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.5-.3Z"/></svg></a>
+        </div>
+      </div>
+      <div class="foot-col">
+        <h4>التطبيق</h4>
+        <a href="#features">المميزات</a>
+        <a href="#how">كيف بيشتغل</a>
+        <a href="#rests">المطاعم</a>
+        <a href="#areas">المناطق المغطّاة</a>
+        <a href="../customer/واجهة%20الزبون%20-%20سنبل.html">ابدأ الطلب</a>
+      </div>
+      <div class="foot-col">
+        <h4>للشركاء</h4>
+        <a href="https://instagram.com/sonbolapp" target="_blank" rel="noopener">ضمّ مطعمك</a>
+        <a href="https://instagram.com/sonbolapp" target="_blank" rel="noopener">اشتغل كابتن</a>
+        <a href="https://instagram.com/sonbolapp" target="_blank" rel="noopener">تواصل معنا</a>
+      </div>
+      <div class="foot-col">
+        <h4>تواصل</h4>
+        <a href="https://instagram.com/sonbolapp" target="_blank" rel="noopener" class="foot-handle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+          @sonbolapp
+        </a>
+        <span>غزة — فلسطين 🇵🇸</span>
+        <span>تابعنا على كل المنصّات</span>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <p>© <span id="year">2026</span> سنبل — كل الحقوق محفوظة.</p>
+      <span class="made">صُنع بحب لأهل <b>غزة</b></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // nav scroll state
+  var nav = document.getElementById('nav');
+  function onScroll(){ nav.classList.toggle('scrolled', window.scrollY > 24); }
+  onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+  // reveal on scroll — robust (rAF + scroll + failsafe), no reliance on IO initial paint
+  var reveals = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  function revealVisible(){
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    for(var i = reveals.length - 1; i >= 0; i--){
+      var el = reveals[i];
+      var r = el.getBoundingClientRect();
+      if(r.top < vh * 0.92 && r.bottom > 0){
+        el.classList.add('in');
+        reveals.splice(i, 1);
+      }
+    }
+  }
+  revealVisible();
+  requestAnimationFrame(revealVisible);
+  window.addEventListener('scroll', revealVisible, { passive:true });
+  window.addEventListener('resize', revealVisible, { passive:true });
+  window.addEventListener('load', revealVisible);
+  // failsafe: never leave content hidden (force-show without transition as last resort)
+  setTimeout(function(){ reveals.forEach(function(el){ el.style.transition = 'none'; el.classList.add('in'); }); }, 2200);
+
+  // mobile menu: simple anchor scroll to features
+  document.getElementById('menuBtn').addEventListener('click', function(){
+    var t = document.getElementById('features');
+    if(t) window.scrollTo({ top:t.offsetTop - 70, behavior:'smooth' });
+  });
+</script>
+</body>
+</html>

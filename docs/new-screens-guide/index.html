@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>سُنبل — دليل الواجهات الجديدة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#1a1a1a; --bg:#f3f1ec; --surface:#fff; --surface-2:#faf8f4;
+    --line:#e7e3da; --text:#1c1c1e; --soft:#6b6b70; --faint:#a0a0a6;
+    --gold:#f6b500; --gold-deep:#dd9e00; --gold-soft:#fef3cf; --gold-tint:#fffaeb;
+    --green:#1f9d55; --green-soft:#e4f6ec; --blue:#2f74c0; --blue-soft:#e6f0fa;
+    --red:#d6342c; --red-soft:#fbe5e3; --purple:#7d3cc0; --purple-soft:#f0e7fb;
+    --r:14px; --r-lg:20px;
+    --sh:0 2px 10px rgba(20,20,25,.05), 0 12px 30px rgba(20,20,25,.06);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ font-family:"Tajawal", system-ui, sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .tnum{ font-variant-numeric:tabular-nums; }
+  .wrap{ max-width:1040px; margin:0 auto; padding:0 22px 80px; }
+
+  /* رأس */
+  .hero{ background:linear-gradient(135deg,#1f1f22,#34343a); color:#fff; padding:46px 0 40px; position:relative; overflow:hidden; }
+  .hero::after{ content:""; position:absolute; inset-inline-end:-60px; top:-60px; width:280px; height:280px; border-radius:50%; background:radial-gradient(circle, rgba(246,181,0,.3), transparent 70%); }
+  .hero .wrap{ padding-bottom:0; }
+  .hero .logo{ display:inline-flex; align-items:center; gap:12px; }
+  .hero .logo .mark{ width:52px; height:52px; border-radius:15px; background:linear-gradient(135deg,#fbc52a,#f3a712); display:grid; place-items:center; font-size:28px; font-weight:900; color:var(--ink); }
+  .hero .logo b{ font-size:24px; font-weight:900; letter-spacing:.5px; }
+  .hero h1{ font-size:34px; font-weight:900; margin:22px 0 8px; letter-spacing:-.5px; }
+  .hero p{ font-size:16px; color:rgba(255,255,255,.7); font-weight:500; max-width:640px; margin:0; }
+  .hero .tags{ display:flex; flex-wrap:wrap; gap:9px; margin-top:22px; }
+  .hero .tag{ background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); padding:7px 15px; border-radius:30px; font-size:13.5px; font-weight:700; }
+  .hero .tag.gold{ background:var(--gold); color:var(--ink); border-color:var(--gold); }
+
+  /* أقسام */
+  section{ margin-top:46px; }
+  .kicker{ font-size:13px; font-weight:900; color:var(--gold-deep); letter-spacing:1px; }
+  h2{ font-size:26px; font-weight:900; margin:6px 0 6px; letter-spacing:-.4px; }
+  h2 .num{ display:inline-grid; place-items:center; width:36px; height:36px; border-radius:11px; background:var(--ink); color:#fff; font-size:18px; margin-inline-end:10px; vertical-align:-7px; }
+  .lead{ font-size:16px; color:var(--soft); font-weight:500; max-width:760px; }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh); }
+
+  /* ملخّص ما الجديد */
+  .new-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:22px; }
+  .new-item{ padding:20px; }
+  .new-item .ni-ic{ width:46px; height:46px; border-radius:13px; display:grid; place-items:center; margin-bottom:13px; }
+  .new-item h3{ font-size:17px; font-weight:900; margin:0 0 5px; }
+  .new-item p{ font-size:13.5px; color:var(--soft); font-weight:500; margin:0; }
+
+  /* مخطّط الحالات */
+  .flow{ padding:26px; margin-top:22px; }
+  .flow-track{ display:flex; align-items:stretch; gap:0; flex-wrap:wrap; }
+  .fstep{ flex:1; min-width:130px; position:relative; padding:4px; }
+  .fstep .box{ border-radius:14px; padding:14px 12px; height:100%; border:1.5px solid var(--line); background:var(--surface-2); text-align:center; }
+  .fstep .badge{ display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:900; padding:5px 11px; border-radius:20px; }
+  .fstep .who{ font-size:11.5px; font-weight:800; color:var(--faint); margin-top:9px; }
+  .fstep .desc{ font-size:12px; color:var(--soft); font-weight:500; margin-top:5px; line-height:1.45; }
+  .fstep .arrow{ position:absolute; inset-inline-start:-9px; top:34px; z-index:2; color:var(--faint); font-size:18px; font-weight:900; }
+  .fstep:first-child .arrow{ display:none; }
+  .pill{ display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border-radius:20px; font-size:12.5px; font-weight:900; }
+  .p-red{ background:var(--red-soft); color:var(--red); }
+  .p-gold{ background:var(--gold-soft); color:var(--gold-deep); }
+  .p-blue{ background:var(--blue-soft); color:var(--blue); }
+  .p-purple{ background:var(--purple-soft); color:var(--purple); }
+  .p-green{ background:var(--green-soft); color:var(--green); }
+  .flow-split{ display:flex; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
+  .flow-branch{ flex:1; min-width:240px; border-radius:14px; padding:15px 17px; }
+  .flow-branch.paid{ background:var(--gold-tint); border:1.5px solid var(--gold-soft); }
+  .flow-branch.unpaid{ background:var(--red-soft); border:1.5px solid #eccac7; }
+  .flow-branch h4{ margin:0 0 5px; font-size:15px; font-weight:900; }
+  .flow-branch p{ margin:0; font-size:13px; font-weight:500; color:var(--soft); }
+  .flow-note{ display:flex; gap:9px; align-items:flex-start; background:var(--blue-soft); border-radius:12px; padding:13px 15px; font-size:13.5px; font-weight:600; color:#27568c; margin-top:18px; }
+
+  /* واجهة (شاشة) */
+  .screen-block{ margin-top:24px; }
+  .screen-row{ display:grid; grid-template-columns:300px 1fr; gap:30px; align-items:start; padding:26px; }
+  .shots{ display:flex; gap:14px; }
+  .shot{ flex:1; }
+  .shot img{ width:100%; border-radius:18px; border:1px solid var(--line); box-shadow:var(--sh); display:block; }
+  .shot .cap{ text-align:center; font-size:12.5px; font-weight:800; color:var(--faint); margin-top:9px; }
+  .spec h3{ font-size:20px; font-weight:900; margin:0 0 4px; }
+  .spec .purpose{ font-size:14.5px; color:var(--soft); font-weight:500; margin:0 0 18px; }
+  .spec h5{ font-size:13px; font-weight:900; color:var(--gold-deep); letter-spacing:.5px; margin:18px 0 9px; display:flex; align-items:center; gap:7px; }
+  .feat{ list-style:none; padding:0; margin:0; }
+  .feat li{ display:flex; gap:10px; align-items:flex-start; padding:7px 0; font-size:14px; font-weight:500; border-bottom:1px solid var(--surface-2); }
+  .feat li b{ font-weight:900; }
+  .feat li .dot{ width:7px; height:7px; border-radius:50%; background:var(--gold); margin-top:8px; flex:0 0 auto; }
+  .states{ display:flex; flex-direction:column; gap:9px; margin-top:6px; }
+  .state{ display:flex; gap:11px; align-items:flex-start; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .state .s-cond{ font-size:13px; font-weight:900; flex:0 0 auto; min-width:108px; }
+  .state .s-res{ font-size:13px; font-weight:500; color:var(--soft); }
+
+  /* كود */
+  .code-h{ display:flex; align-items:center; gap:9px; margin:14px 0 0; font-size:13px; font-weight:900; color:var(--soft); }
+  .code-h .file{ background:var(--ink); color:#fff; padding:3px 11px; border-radius:7px; font-family:ui-monospace,monospace; font-size:12px; }
+  pre{ background:#1c1c1f; color:#e8e6df; border-radius:13px; padding:16px 18px; overflow-x:auto; font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12.5px; line-height:1.7; direction:ltr; text-align:left; margin:10px 0 0; }
+  pre .c{ color:#7c8089; } pre .k{ color:#e8a84d; } pre .s{ color:#9ccc7a; } pre .v{ color:#6fb6e0; }
+
+  /* جدول الملفات */
+  .files{ width:100%; border-collapse:collapse; margin-top:18px; font-size:14px; }
+  .files th,.files td{ text-align:right; padding:13px 14px; border-bottom:1px solid var(--line); }
+  .files th{ font-weight:900; color:var(--soft); font-size:12.5px; background:var(--surface-2); }
+  .files td code{ font-family:ui-monospace,monospace; font-size:12.5px; background:var(--gold-tint); color:var(--gold-deep); padding:2px 8px; border-radius:6px; }
+  .files .new{ display:inline-block; background:var(--green-soft); color:var(--green); font-size:11px; font-weight:900; padding:2px 8px; border-radius:20px; }
+  .files .mod{ display:inline-block; background:var(--blue-soft); color:var(--blue); font-size:11px; font-weight:900; padding:2px 8px; border-radius:20px; }
+
+  .callout{ display:flex; gap:13px; align-items:flex-start; background:var(--gold-tint); border:1px solid var(--gold-soft); border-radius:var(--r); padding:16px 18px; margin-top:18px; }
+  .callout .co-ic{ font-size:22px; flex:0 0 auto; }
+  .callout b{ font-weight:900; }
+
+  @media (max-width:760px){
+    .new-grid{ grid-template-columns:1fr; }
+    .screen-row{ grid-template-columns:1fr; }
+    .shots{ max-width:340px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="logo"><span class="mark">س</span><b>سُنبل</b></div>
+    <h1>دليل الواجهات الجديدة</h1>
+    <p>الواجهات التي أُضيفت إلى تطبيق الزبون حسب المنطق الجديد لتتبّع حالة الطلب والدفع. كل واجهة موضّحة بصورتها وعناصرها وسلوكها ونموذج بياناتها، جاهزة للدمج في المشروع.</p>
+    <div class="tags">
+      <span class="tag gold">واجهة الزبون · غزة</span>
+      <span class="tag">شاشة الدفع</span>
+      <span class="tag">تأكيد الاستلام</span>
+      <span class="tag">تتبّع الحالة</span>
+      <span class="tag">٧ حالات للطلب</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ملخّص ما الجديد -->
+  <section>
+    <div class="kicker">ملخّص سريع</div>
+    <h2>ما الذي أُضيف؟</h2>
+    <p class="lead">ثلاث واجهات جديدة + نموذج حالات جديد للطلب. الواجهات الأخرى (الرئيسية، المطعم، السلة، تأكيد الطلب، طلباتي، حسابي) موجودة عندكم — هذه إضافات فوقها.</p>
+    <div class="new-grid">
+      <div class="card new-item">
+        <div class="ni-ic" style="background:var(--gold-tint);color:var(--gold-deep);">💳</div>
+        <h3>شاشة الدفع</h3>
+        <p>تظهر بعد تأكيد الطلب. تحويل بنكي + محافظ، حقول قابلة للنسخ، رفع وصل التحويل، وخيار «مشكلة في الرفع».</p>
+      </div>
+      <div class="card new-item">
+        <div class="ni-ic" style="background:var(--gold-tint);color:var(--gold-deep);">📦</div>
+        <h3>تأكيد استلام الطلب</h3>
+        <p>تظهر مباشرة بعد الدفع. تعرض رقم الطلب والحالة الأولى (قيد المعالجة أو غير مدفوع).</p>
+      </div>
+      <div class="card new-item">
+        <div class="ni-ic" style="background:var(--gold-tint);color:var(--gold-deep);">🚴</div>
+        <h3>تتبّع الطلب</h3>
+        <p>خط زمني عمودي بـ ٦ مراحل + بطاقة الكابتن + بانر «غير مدفوع» + التقييم بعد التسليم.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- مخطّط دورة حياة الطلب -->
+  <section>
+    <div class="kicker">المنطق الأساسي</div>
+    <h2>دورة حياة الطلب</h2>
+    <p class="lead">عند الدفع، يبدأ الطلب من «قيد المعالجة». أما إذا تعذّر رفع الوصل، فيبدأ من «غير مدفوع» (خارج الخط الزمني) حتى يؤكّد الدعم الدفع يدوياً من لوحة التحكم.</p>
+
+    <div class="card flow">
+      <div class="flow-split">
+        <div class="flow-branch paid">
+          <h4>✅ المسار المدفوع (رفع الوصل)</h4>
+          <p>الزبون رفع صورة وصل التحويل → الطلب يبدأ مباشرة بحالة <b>قيد المعالجة</b> لدى الإدارة.</p>
+        </div>
+        <div class="flow-branch unpaid">
+          <h4>⚠️ المسار غير المدفوع (مشكلة في الرفع)</h4>
+          <p>الزبون فعّل «مشكلة في الرفع» وكتب ملاحظة → الطلب يبدأ بحالة <b>غير مدفوع</b>، ويتصل الدعم لإتمام الدفع ثم يحوّله يدوياً إلى «قيد المعالجة».</p>
+        </div>
+      </div>
+
+      <div class="flow-track">
+        <div class="fstep">
+          <div class="box">
+            <span class="pill p-red">غير مدفوع</span>
+            <div class="who">حالة خاصة · خارج الخط</div>
+            <div class="desc">بانتظار تأكيد الدعم للدفع</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <span class="arrow">‹</span>
+          <div class="box">
+            <span class="pill p-gold">قيد المعالجة</span>
+            <div class="who">الإدارة</div>
+            <div class="desc">الطلب عند الإدارة ولم يُحوَّل للمطعم بعد</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <span class="arrow">‹</span>
+          <div class="box">
+            <span class="pill p-blue">طلب جديد</span>
+            <div class="who">الإدارة ← المطعم</div>
+            <div class="desc">حُوّل الطلب إلى المطعم</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <span class="arrow">‹</span>
+          <div class="box">
+            <span class="pill p-gold">قيد التحضير</span>
+            <div class="who">المطعم</div>
+            <div class="desc">وافق المطعم وبدأ التحضير</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <span class="arrow">‹</span>
+          <div class="box">
+            <span class="pill p-purple">طلب جاهز</span>
+            <div class="who">المطعم</div>
+            <div class="desc">جاهز بانتظار الكابتن</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <span class="arrow">‹</span>
+          <div class="box">
+            <span class="pill p-gold">في الطريق</span>
+            <div class="who">الكابتن</div>
+            <div class="desc">الكابتن استلم وبطريقه</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <span class="arrow">‹</span>
+          <div class="box">
+            <span class="pill p-green">تم التوصيل</span>
+            <div class="who">اكتمل</div>
+            <div class="desc">وصل الطلب — يظهر التقييم</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-note">
+        <span>🛠️</span>
+        <span>الانتقالات التي تتم من <b>لوحة التحكم</b> (لم تُبنَ بعد): تأكيد الدفع (غير مدفوع ← قيد المعالجة)، تحويل الطلب للمطعم (قيد المعالجة ← طلب جديد)، وتعيين الكابتن (طلب جاهز ← في الطريق). أما «قيد التحضير» و«طلب جاهز» فمن المطعم. في النموذج الحالي يحاكيها الشريط السفلي «محاكاة لوحة التحكم».</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- الواجهة ١: الدفع -->
+  <section class="screen-block">
+    <h2><span class="num">١</span>شاشة الدفع</h2>
+    <div class="card screen-row">
+      <div class="shots">
+        <div class="shot"><img src="img/01-payment-bank.png" alt="شاشة الدفع — تحويل بنكي" /><div class="cap">طرق الدفع + بطاقة بنك فلسطين</div></div>
+        <div class="shot"><img src="img/02-payment-problem.png" alt="شاشة الدفع — رفع الوصل" /><div class="cap">رفع الوصل + «مشكلة في الرفع»</div></div>
+      </div>
+      <div class="spec">
+        <h3>اختيار طريقة الدفع ورفع الوصل</h3>
+        <p class="purpose">تظهر بعد شاشة «تأكيد الطلب». الزبون يحوّل المبلغ يدوياً ثم يرفع صورة الوصل، أو يبلّغ عن مشكلة في الرفع.</p>
+
+        <h5>◆ العناصر</h5>
+        <ul class="feat">
+          <li><span class="dot"></span><span><b>تحويل بنكي — بنك فلسطين:</b> رقم الحساب، رقم الجوال، رقم الآيبان (IBAN). كل حقل بزر نسخ مستقل.</span></li>
+          <li><span class="dot"></span><span><b>محافظ إلكترونية:</b> جوال باي وبال باي — تحويل عبر رقم الجوال (قابل للنسخ).</span></li>
+          <li><span class="dot"></span><span><b>صندوق رفع الوصل:</b> صورة (PNG/JPG)، مع معاينة مصغّرة بعد الرفع وإمكانية الحذف.</span></li>
+          <li><span class="dot"></span><span><b>صندوق «هل تواجه مشكلة في رفع الوصل؟»:</b> checkbox يفتح مربع ملاحظات نصّي عند تفعيله.</span></li>
+        </ul>
+
+        <h5>◆ السلوك والحالات</h5>
+        <div class="states">
+          <div class="state"><span class="s-cond">رفع الوصل</span><span class="s-res">يُفعّل زر «تأكيد الطلب» → الطلب يبدأ بحالة <b>قيد المعالجة</b>.</span></div>
+          <div class="state"><span class="s-cond">مشكلة + ملاحظة</span><span class="s-res">يُفعّل الزر أيضاً → الطلب يبدأ بحالة <b>غير مدفوع</b> ويظهر تنبيه بأن الدعم سيتواصل.</span></div>
+          <div class="state"><span class="s-cond">لا هذا ولا ذاك</span><span class="s-res">الزر معطّل ونصّه «ارفع الوصل للمتابعة».</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- الواجهة ٢: تأكيد الاستلام -->
+  <section class="screen-block">
+    <h2><span class="num">٢</span>شاشة تأكيد استلام الطلب</h2>
+    <div class="card screen-row">
+      <div class="shots" style="max-width:200px;">
+        <div class="shot"><img src="img/03-placed.png" alt="تأكيد استلام الطلب" /><div class="cap">حالة «غير مدفوع» (أحمر)</div></div>
+      </div>
+      <div class="spec">
+        <h3>تأكيد الاستلام + رقم الطلب</h3>
+        <p class="purpose">تظهر مباشرة بعد الضغط على «تأكيد الطلب» في شاشة الدفع. تطمئن الزبون وتعطيه رقم طلبه.</p>
+
+        <h5>◆ العناصر</h5>
+        <ul class="feat">
+          <li><span class="dot"></span><span>أيقونة كبيرة + عنوان «تم استلام طلبك».</span></li>
+          <li><span class="dot"></span><span>رسالة تشرح الحالة الأولى للزبون.</span></li>
+          <li><span class="dot"></span><span><b>رقم الطلب</b> بصيغة <code style="direction:ltr">ORD-XXXXXX-AAA</code>.</span></li>
+          <li><span class="dot"></span><span>زرّا «تتبّع الطلب» و«العودة للرئيسية».</span></li>
+        </ul>
+
+        <h5>◆ تختلف حسب الحالة</h5>
+        <div class="states">
+          <div class="state"><span class="s-cond" style="color:var(--gold-deep)">قيد المعالجة</span><span class="s-res">أيقونة ذهبية + «طلبك قيد المعالجة لدى إدارة سُنبل — نتأكد من التحويل ثم نحوّله للمطعم».</span></div>
+          <div class="state"><span class="s-cond" style="color:var(--red)">غير مدفوع</span><span class="s-res">أيقونة تنبيه حمراء + «طلبك بحالة غير مدفوع — سيتواصل معك الدعم لإتمام الدفع».</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- الواجهة ٣: التتبّع -->
+  <section class="screen-block">
+    <h2><span class="num">٣</span>شاشة تتبّع الطلب</h2>
+    <div class="card screen-row">
+      <div class="shots">
+        <div class="shot"><img src="img/04-track-unpaid.png" alt="تتبّع — غير مدفوع" /><div class="cap">غير مدفوع (بانر أحمر)</div></div>
+        <div class="shot"><img src="img/05-track-processing.png" alt="تتبّع — قيد المعالجة" /><div class="cap">قيد المعالجة</div></div>
+        <div class="shot"><img src="img/06-track-onway.png" alt="تتبّع — في الطريق" /><div class="cap">في الطريق</div></div>
+      </div>
+      <div class="spec">
+        <h3>الخط الزمني + الكابتن + التقييم</h3>
+        <p class="purpose">تعرض حالة الطلب الحيّة عبر خط زمني عمودي بنفس مراحل لوحة التحكم، وتتكيّف مع كل حالة.</p>
+
+        <h5>◆ العناصر</h5>
+        <ul class="feat">
+          <li><span class="dot"></span><span><b>بطاقة الطلب:</b> شعارات المطاعم (متعدّدة) + رقم الطلب + الوقت المتوقّع.</span></li>
+          <li><span class="dot"></span><span><b>الحالة الكبيرة:</b> أيقونة ملوّنة + اسم الحالة + وصفها.</span></li>
+          <li><span class="dot"></span><span><b>الخط الزمني العمودي:</b> ٦ مراحل (قيد المعالجة ← طلب جديد ← قيد التحضير ← طلب جاهز ← في الطريق ← تم التوصيل)؛ المنجزة خضراء، الحالية ذهبية، القادمة رمادية.</span></li>
+          <li><span class="dot"></span><span><b>بطاقة الكابتن:</b> تظهر عند «في الطريق» — الاسم، التقييم، اللوحة، زرّا اتصال ومحادثة.</span></li>
+          <li><span class="dot"></span><span><b>التقييم:</b> يظهر عند «تم التوصيل» (نجوم + إرسال).</span></li>
+          <li><span class="dot"></span><span>ملخّص أسفل: العنوان، طريقة الدفع (وصل مُرفق / غير مدفوع)، والإجمالي.</span></li>
+        </ul>
+
+        <h5>◆ حالة «غير مدفوع»</h5>
+        <div class="states">
+          <div class="state"><span class="s-cond" style="color:var(--red)">بانر أحمر</span><span class="s-res">يظهر فوق الخط الزمني: «طلبك بحالة غير مدفوع. سيتصل بك فريق الدعم…»، والخط الزمني يبقى رمادياً (لم يبدأ بعد).</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- نموذج البيانات -->
+  <section>
+    <div class="kicker">المرجع التقني</div>
+    <h2>نموذج البيانات والحالات</h2>
+    <p class="lead">هذه البُنى تقود الواجهات الثلاث. أعِد استخدامها كما هي أو طابِقها مع أسماء حقول الـ API عندكم.</p>
+
+    <div class="code-h"><span>حالات الطلب وترتيبها</span><span class="file">order-status.js</span></div>
+    <pre><span class="c">// unpaid حالة خاصة خارج الخط الزمني. الخط يبدأ من processing بعد الدفع.</span>
+<span class="k">const</span> STATUS = {
+  unpaid:     { label: <span class="s">"غير مدفوع"</span>,        sub: <span class="s">"بانتظار تأكيد الدفع — سيتواصل معك الدعم"</span>, tone: <span class="s">"red"</span>    },
+  processing: { label: <span class="s">"قيد المعالجة"</span>,     sub: <span class="s">"طلبك عند إدارة سُنبل"</span>,                    tone: <span class="s">"gold"</span>   },
+  new:        { label: <span class="s">"طلب جديد"</span>,          sub: <span class="s">"تم تحويل طلبك إلى المطعم"</span>,                tone: <span class="s">"blue"</span>   },
+  preparing:  { label: <span class="s">"قيد التحضير"</span>,       sub: <span class="s">"المطعم يحضّر طلبك الآن"</span>,                  tone: <span class="s">"gold"</span>   },
+  ready:      { label: <span class="s">"طلب جاهز"</span>,          sub: <span class="s">"جاهز بانتظار الكابتن"</span>,                    tone: <span class="s">"purple"</span> },
+  onway:      { label: <span class="s">"المندوب في الطريق"</span>, sub: <span class="s">"الطلب بطريقه إليك"</span>,                       tone: <span class="s">"gold"</span>   },
+  delivered:  { label: <span class="s">"تم توصيل الطلب"</span>,    sub: <span class="s">"صحتين وعافية"</span>,                            tone: <span class="s">"green"</span>  },
+};
+
+<span class="c">// الخط الزمني المعروض للزبون (بعد الدفع)</span>
+<span class="k">const</span> TIMELINE = [<span class="s">"processing"</span>, <span class="s">"new"</span>, <span class="s">"preparing"</span>, <span class="s">"ready"</span>, <span class="s">"onway"</span>, <span class="s">"delivered"</span>];</pre>
+
+    <div class="code-h"><span>بيانات الدفع</span><span class="file">payment.js</span></div>
+    <pre><span class="k">const</span> PAYMENT = {
+  bank: {
+    name: <span class="s">"تحويل بنكي"</span>, bankName: <span class="s">"بنك فلسطين"</span>,
+    fields: [
+      { k: <span class="s">"رقم الحساب"</span>,        v: <span class="s">"412-300-1985"</span> },
+      { k: <span class="s">"رقم الجوال"</span>,        v: <span class="s">"0597 796 100"</span> },
+      { k: <span class="s">"رقم الآيبان (IBAN)"</span>, v: <span class="s">"PS92 PALS 0000 0000 4123 0019 85"</span> },
+    ],
+    holder: <span class="s">"شركة سُنبل للتوصيل"</span>,
+  },
+  wallets: [
+    { name: <span class="s">"جوال باي"</span>, fields: [{ k: <span class="s">"رقم الجوال"</span>, v: <span class="s">"0597 796 100"</span> }] },
+    { name: <span class="s">"بال باي"</span>,  fields: [{ k: <span class="s">"رقم الجوال"</span>, v: <span class="s">"0599 123 456"</span> }] },
+  ],
+};</pre>
+
+    <div class="code-h"><span>منطق وضع الطلب (الحالة الأولى)</span><span class="file">placeOrder()</span></div>
+    <pre><span class="c">// pay.paid = true إذا رُفع الوصل، false إذا فعّل «مشكلة»</span>
+<span class="k">function</span> placeOrder(pay) {
+  <span class="k">const</span> status = pay.paid ? <span class="s">"processing"</span> : <span class="s">"unpaid"</span>;
+  <span class="k">const</span> order = {
+    number: newOrderNumber(),        <span class="c">// ORD-XXXXXX-AAA</span>
+    status,
+    payMethod: pay.method,
+    paid: pay.paid,
+    problemNote: pay.pnote,          <span class="c">// ملاحظة «مشكلة في الرفع»</span>
+    receipt: pay.receipt,            <span class="c">// صورة الوصل</span>
+    <span class="c">/* ...المطاعم، الأصناف، العنوان، الإجمالي... */</span>
+  };
+  saveOrder(order);
+}</pre>
+  </section>
+
+  <!-- ملفات الكود -->
+  <section>
+    <div class="kicker">للدمج</div>
+    <h2>ملفات الكود المرجعية</h2>
+    <p class="lead">الكود الكامل للواجهات الجديدة موجود في مجلد <code style="font-family:ui-monospace,monospace;background:var(--gold-tint);color:var(--gold-deep);padding:2px 8px;border-radius:6px">customer/</code> بالمشروع. هذه الملفات التي تخص الإضافات الجديدة:</p>
+    <table class="files">
+      <thead><tr><th>الملف</th><th>الحالة</th><th>المحتوى المتعلّق بالإضافات</th></tr></thead>
+      <tbody>
+        <tr><td><code>customer-data.js</code></td><td><span class="mod">معدّل</span></td><td>STATUS، TIMELINE، PAYMENT، newOrderNumber()</td></tr>
+        <tr><td><code>customer-screens-b.jsx</code></td><td><span class="new">جديد</span></td><td><b>PaymentScreen</b>، <b>PlacedScreen</b>، <b>TrackScreen</b>، RateRow</td></tr>
+        <tr><td><code>customer-components.jsx</code></td><td><span class="new">جديد</span></td><td>StatusPill، VTimeline، CaptainCard</td></tr>
+        <tr><td><code>customer-app.jsx</code></td><td><span class="mod">معدّل</span></td><td>placeOrder()، advanceOrder()، تنقّل الدفع والتتبّع</td></tr>
+        <tr><td><code>customer-styles.css</code></td><td><span class="mod">معدّل</span></td><td>أنماط الدفع (.pay-method، .bankcard، .uploadbox، .problembox)، الحالة (.pill-*، .vtl، .statusbig)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <span class="co-ic">💡</span>
+      <span><b>طريقة الدمج المقترحة:</b> أضِف <b>STATUS / TIMELINE / PAYMENT</b> لطبقة البيانات عندكم أولاً، ثم اربط <b>شاشة الدفع</b> بعد شاشة «تأكيد الطلب» الحالية، وأخيراً حدّث <b>شاشة التتبّع</b> لتقرأ من نموذج الحالات الجديد. ألوان الحالات (أحمر/ذهبي/أزرق/بنفسجي/أخضر) متوافقة مع هوية سُنبل الحالية.</span>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

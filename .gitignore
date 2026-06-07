@@ -4,3 +4,9 @@ Thumbs.db
 node_modules/
 .vscode/
 .idea/
+
+# Heavy media — keep out of git (use external storage / git-lfs if needed)
+*.mp4
+*.MP4
+*.mov
+*.MOV
