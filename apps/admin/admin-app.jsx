@@ -120,8 +120,9 @@ function App(){
     }
     const off1 = SonbolHub.on("order", apply);
     const off2 = SonbolHub.on("init", (list) => list.forEach(apply));
+    const off3 = SonbolHub.on("reset", () => setOrders(A.seedOrders())); // إعادة ضبط موحّدة → استعادة البيانات الأولية
     SonbolHub.connect();
-    return () => { off1 && off1(); off2 && off2(); };
+    return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
   }, []);
 
   const orderDetail = orderId ? orders.find((o) => o.id === orderId) : null;

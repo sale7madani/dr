@@ -81,15 +81,16 @@ function App(){
         return prev.map((o) => {
           if (o.id !== h.id) return o;
           let st = h.status;
-          if (!SB.STATUS[st]) st = o.status; // تجاهل الحالات التي لا تعرفها واجهة الزبون (rejected/canceled)
-          return { ...o, status: st, captainName: h.captainName || o.captainName };
+          if (!SB.STATUS[st]) st = o.status; // أمان: تجاهل أي حالة غير معروفة
+          return { ...o, status: st, captainName: h.captainName || o.captainName, rejectReason: h.rejectReason || o.rejectReason };
         });
       });
     }
     const off1 = SonbolHub.on("order", apply);
     const off2 = SonbolHub.on("init", (list) => list.forEach(apply));
+    const off3 = SonbolHub.on("reset", () => resetDemo()); // إعادة ضبط موحّدة من أي واجهة
     SonbolHub.connect();
-    return () => { off1 && off1(); off2 && off2(); };
+    return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
   }, []);
 
   useEffect(() => {
@@ -137,7 +138,7 @@ function App(){
   }
 
   const address = addrList.find((a) => a.id === addrId) || addrList[0];
-  const activeOrders = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
+  const activeOrders = orders.filter((o) => !["delivered", "cancelled", "canceled", "rejected"].includes(o.status));
 
   /* وضع الطلب */
   function placeOrder(pay){
@@ -294,7 +295,7 @@ function App(){
           if (o.status === "delivered") return <span className="dl" style={{ opacity: .6 }}>اكتمل</span>;
           return <button className="demo-adv" onClick={() => advanceOrder(o.id)}>{label} <Ic.chevL s={14} style={{ verticalAlign: "-2px" }} /></button>;
         })()}
-        <button className="demo-reset" onClick={resetDemo}>إعادة ضبط</button>
+        <button className="demo-reset" onClick={() => { resetDemo(); if (window.SonbolHub) SonbolHub.reset(); }}>إعادة ضبط</button>
       </div>
 
       <TweaksPanel title="التحكم">

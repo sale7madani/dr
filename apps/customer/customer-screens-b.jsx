@@ -302,6 +302,7 @@ function PlacedScreen({ order, onTrack, onHome }){
 /* ===================== تتبّع الطلب ===================== */
 function TrackScreen({ order, onHome, back, onRate }){
   const unpaid = order.status === "unpaid";
+  const ended = order.status === "rejected" || order.status === "canceled";
   const restNames = order.restaurantNames;
   const idx = SB.TIMELINE.indexOf(order.status);
   const hasCaptain = idx >= SB.TIMELINE.indexOf("onway");
@@ -322,7 +323,7 @@ function TrackScreen({ order, onHome, back, onRate }){
               <div className="oc-num tnum" style={{ fontSize: 12, color: "var(--text-faint)", fontWeight: 700, marginTop: 2 }}>{order.number}</div>
             </div>
           </div>
-          {!unpaid && !delivered && <div className="track-eta"><Ic.timer s={16} /> الوقت المتوقّع {order.etaMin}-{order.etaMax} دقيقة</div>}
+          {!unpaid && !delivered && !ended && <div className="track-eta"><Ic.timer s={16} /> الوقت المتوقّع {order.etaMin}-{order.etaMax} دقيقة</div>}
         </div>
 
         {/* بانر غير مدفوع */}
@@ -330,6 +331,17 @@ function TrackScreen({ order, onHome, back, onRate }){
           <div className="infonote warn" style={{ marginTop: 14, alignItems: "center" }}>
             <span className="in-ic"><Ic.alert s={18} /></span>
             <span>طلبك بحالة <b>غير مدفوع</b>. سيتصل بك فريق الدعم على رقمك لإتمام الدفع، ثم نحوّله للمطعم.</span>
+          </div>
+        )}
+
+        {/* بانر الرفض / الإلغاء */}
+        {ended && (
+          <div className="infonote warn" style={{ marginTop: 14, alignItems: "center" }}>
+            <span className="in-ic"><Ic.alert s={18} /></span>
+            <span>
+              {order.status === "rejected" ? <>اعتذر المطعم عن تنفيذ طلبك.</> : <>تم إلغاء هذا الطلب.</>}
+              {order.rejectReason ? <> السبب: <b>{order.rejectReason}</b>.</> : null} سيتواصل معك الدعم إذا لزم.
+            </span>
           </div>
         )}
 
@@ -343,7 +355,7 @@ function TrackScreen({ order, onHome, back, onRate }){
         {/* الخط الزمني */}
         <div className="block" style={{ marginTop: 16, paddingBottom: 4 }}>
           <div className="block-h"><span className="b-ic"><Ic.list s={18} /></span><span className="b-t">حالة الطلب</span></div>
-          <VTimeline currentKey={unpaid ? "_none" : order.status} />
+          <VTimeline currentKey={unpaid || ended ? "_none" : order.status} />
         </div>
 
         {/* الكابتن */}

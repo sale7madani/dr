@@ -41,6 +41,16 @@
     border:1px solid var(--line);border-radius:999px;padding:2px 9px;margin-top:11px}
   footer{text-align:center;color:var(--text-faint);font-size:12.5px;margin-top:40px;line-height:1.8}
   code{background:#fff;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12px}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin:0 0 6px}
+  .ctl{font-family:inherit;font-weight:800;font-size:14px;border-radius:12px;padding:11px 18px;cursor:pointer;border:1px solid transparent;transition:transform .1s,box-shadow .12s}
+  .ctl:hover{transform:translateY(-2px)}
+  .ctl-gold{background:var(--gold);color:var(--ink);box-shadow:0 6px 16px rgba(217,146,10,.28)}
+  .ctl-line{background:var(--surface);border-color:var(--line);color:var(--text)}
+  .hubstat{font-size:12.5px;font-weight:700;color:var(--text-faint);width:100%;text-align:center;margin-top:2px}
+  .steps{counter-reset:s;max-width:640px;margin:8px auto 0;padding:0;list-style:none}
+  .steps li{counter-increment:s;position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 52px 12px 14px;margin-bottom:8px;font-size:13.5px;color:var(--text-soft);font-weight:600}
+  .steps li::before{content:counter(s);position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--gold-soft);color:var(--gold-deep);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .steps b{color:var(--text)}
 </style>
 </head>
 <body>
@@ -50,6 +60,12 @@
       <h1>منصّة سنبل</h1>
       <div class="sub">لوحة تشغيل واجهات منظومة توصيل الطعام — اختر واجهة لفتحها</div>
     </header>
+
+    <div class="controls">
+      <button id="openAll" class="ctl ctl-gold">🚀 افتح كل الواجهات</button>
+      <button id="resetAll" class="ctl ctl-line">♻️ إعادة ضبط المنصّة</button>
+      <span id="hubStat" class="hubstat">…</span>
+    </div>
 
     <div class="sec">التطبيقات</div>
     <div class="grid">
@@ -105,11 +121,43 @@
       </a>
     </div>
 
+    <div class="sec">كيف تجرّب التدفّق الكامل</div>
+    <ol class="steps">
+      <li>اضغط <b>افتح كل الواجهات</b> فوق (الزبون والمطعم والكابتن والإدارة بأربع تبويبات).</li>
+      <li>في تطبيق <b>الزبون</b>: اختر مطعماً، أضف أصنافاً، أكمل الطلب وادفع.</li>
+      <li>في <b>المطعم</b>: سيرنّ تنبيه — اقبل الطلب، حضّره، ثم علّمه <b>«جاهز»</b>.</li>
+      <li>في <b>الكابتن</b>: سيصلك الطلب — اقبله ثم أكمل مراحل التوصيل حتى <b>«تم التسليم»</b>.</li>
+      <li>تابع الحالة تتحدّث لحظياً عند <b>الزبون</b> و<b>الإدارة</b>. للإعادة اضغط <b>إعادة ضبط المنصّة</b>.</li>
+    </ol>
+
     <footer>
       كل الواجهات تعمل بدون خطوة بناء (React + Babel Standalone) ومربوطة حيّاً عبر ناقل أحداث (SSE).<br>
-      شغّل المنصّة من جذر المشروع: <code>npm start</code> (أو <code>node server/server.js</code>) ثم افتح هذه الصفحة.<br>
-      جرّب: افتح الزبون والمطعم والكابتن والإدارة في تبويبات منفصلة، اطلب من الزبون — وشوف الطلب يوصل للجميع فوراً.
+      شغّل المنصّة من جذر المشروع: <code>npm start</code> (أو <code>node server/server.js</code>) ثم افتح هذه الصفحة.
     </footer>
   </div>
+
+  <script>
+    document.getElementById("openAll").onclick = function () {
+      ["apps/customer/", "apps/restaurant/", "apps/captain/", "apps/admin/"].forEach(function (u) { window.open(u, "_blank"); });
+    };
+    document.getElementById("resetAll").onclick = function () {
+      if (!confirm("إعادة ضبط كل طلبات المنصّة؟ سيُمسح التدفّق الحالي عند كل الواجهات.")) return;
+      fetch("/hub/reset", { method: "POST" }).then(refresh).catch(function () {});
+    };
+    function refresh() {
+      fetch("/hub/state").then(function (r) { return r.json(); }).then(function (s) {
+        var orders = s.orders || [];
+        var active = orders.filter(function (o) { return ["unpaid", "processing", "new", "preparing", "ready", "onway"].indexOf(o.status) >= 0; }).length;
+        var el = document.getElementById("hubStat");
+        el.textContent = "● الخادم متّصل · " + orders.length + " طلب (" + active + " نشط)";
+        el.style.color = "var(--green)";
+      }).catch(function () {
+        var el = document.getElementById("hubStat");
+        el.textContent = "● الخادم غير متّصل — شغّل npm start ثم افتح عبر الخادم";
+        el.style.color = "#d93b34";
+      });
+    }
+    refresh(); setInterval(refresh, 4000);
+  </script>
 </body>
 </html>

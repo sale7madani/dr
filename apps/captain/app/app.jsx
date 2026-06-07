@@ -257,8 +257,9 @@ function App() {
     }
     const off1 = SonbolHub.on('order', handle);
     const off2 = SonbolHub.on('init', (list) => list.forEach(handle));
+    const off3 = SonbolHub.on('reset', () => { hubOffered.current = {}; setIncoming(null); setActive(null); setStageIdx(0); setView('tabs'); setTab('home'); });
     SonbolHub.connect();
-    return () => { off1 && off1(); off2 && off2(); };
+    return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
   }, [online, active, incoming]);
 
   const simulate = () => { primeAudio(); if (!active) setIncoming(makeIncomingOrder()); };

@@ -179,6 +179,8 @@
     ready:      { k: "ready",      label: "طلب جاهز",          sub: "جاهز بانتظار الكابتن",                    icon: "bag",         tone: "purple" },
     onway:      { k: "onway",      label: "المندوب في الطريق", sub: "الطلب بطريقه إليك",                       icon: "bike",        tone: "gold" },
     delivered:  { k: "delivered",  label: "تم توصيل الطلب",    sub: "صحتين وعافية 🌿",                         icon: "checkCircle", tone: "green" },
+    rejected:   { k: "rejected",   label: "تم رفض الطلب",      sub: "اعتذر المطعم عن تنفيذ طلبك",              icon: "alert",       tone: "red" },
+    canceled:   { k: "canceled",   label: "أُلغي الطلب",       sub: "تم إلغاء هذا الطلب",                      icon: "alert",       tone: "red" },
   };
   // الخط الزمني المعروض للزبون (بعد الدفع)
   const TIMELINE = ["processing", "new", "preparing", "ready", "onway", "delivered"];

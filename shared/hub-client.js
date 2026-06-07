@@ -59,8 +59,27 @@
       emit("reset");
     });
 
-    es.onopen = function () { connected = true; emit("status", { connected: true }); };
-    es.onerror = function () { connected = false; emit("status", { connected: false }); }; // EventSource يعيد الاتصال تلقائياً
+    es.onopen = function () { connected = true; showBadge(false); emit("status", { connected: true }); };
+    es.onerror = function () { connected = false; showBadge(true); emit("status", { connected: false }); }; // EventSource يعيد الاتصال تلقائياً
+  }
+
+  /* شارة تنبيه صغيرة تظهر فقط عند انقطاع الرابط الحيّ (مثلاً عند الفتح بدون الخادم) */
+  var badge = null;
+  function showBadge(visible) {
+    try {
+      if (!document.body) return;
+      if (visible && !badge) {
+        badge = document.createElement("div");
+        badge.dir = "rtl";
+        badge.style.cssText = "position:fixed;inset-inline-start:12px;bottom:12px;z-index:99999;" +
+          "background:#d93b34;color:#fff;font:700 12.5px/1.4 Tajawal,system-ui,sans-serif;" +
+          "padding:8px 13px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.18);max-width:280px;";
+        badge.innerHTML = "⚠️ الرابط الحيّ غير متّصل — شغّل المنصّة بـ <b>npm start</b> وافتح عبر الخادم.";
+        document.body.appendChild(badge);
+      } else if (!visible && badge) {
+        badge.remove(); badge = null;
+      }
+    } catch (e) { /* ignore */ }
   }
 
   function publish(order) {

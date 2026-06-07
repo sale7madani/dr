@@ -126,8 +126,9 @@ function App(){
     }
     const off1 = SonbolHub.on("order", applyHubOrder);
     const off2 = SonbolHub.on("init", (list) => list.forEach(applyHubOrder));
+    const off3 = SonbolHub.on("reset", () => { hubSeen.current = {}; resetDemo(); });
     SonbolHub.connect();
-    return () => { off1 && off1(); off2 && off2(); };
+    return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
   }, []);
 
   const newCount   = orders.filter((o) => o.status === "new").length;
@@ -163,7 +164,7 @@ function App(){
     clearFromQueue(order.id);
     setRejecting(null);
     A.blip(false);
-    if (window.SonbolHub) SonbolHub.publish(restaurantToHub(order, "rejected", settings.name));
+    if (window.SonbolHub) SonbolHub.publish(Object.assign(restaurantToHub(order, "rejected", settings.name), { rejectReason: reason || "" }));
   }
   function action(order, type){
     if (type === "open-accept"){ setDrawerId(null); setManualNewId(order.id); return; }
@@ -395,7 +396,7 @@ function App(){
           style={{ opacity: accepting ? 1 : 0.5 }}>
           <Ic.plus s={17} /> طلب جديد وارد
         </button>
-        <button className="btn btn-line btn-sm" onClick={resetDemo} style={{ color: "rgba(255,255,255,.7)", borderColor: "rgba(255,255,255,.2)" }}>
+        <button className="btn btn-line btn-sm" onClick={() => { resetDemo(); if (window.SonbolHub) SonbolHub.reset(); }} style={{ color: "rgba(255,255,255,.7)", borderColor: "rgba(255,255,255,.2)" }}>
           إعادة ضبط
         </button>
       </div>
