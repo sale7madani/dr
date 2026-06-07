@@ -3,6 +3,60 @@
    ============================================================ */
 const A = window.SunbulAudio;
 const LS_KEY = "sunbul_restaurant_v7";
+if (window.SonbolAPI) SonbolAPI.configure({ tokenKey: "sonbol_token_restaurant" });
+
+/* محوّل: طلب الباك-إند → شكل طلب المطعم */
+function apiOrderToRest(bo){
+  return {
+    id: String(bo.id), number: bo.number, status: mapHubToRest(bo.status) || "new",
+    customer: { name: bo.customerName || "زبون", phone: bo.customerPhone || "", address: bo.address || bo.area || "" },
+    items: (bo.items || []).map((i, ix) => ({ id: i.id || ("it" + ix), name: i.name, price: (i.unit != null ? i.unit : (i.price || 0)), qty: i.qty || 1, mods: [] })),
+    note: bo.note || "",
+    payment: bo.payMethod === "online" ? "online" : "cash",
+    subtotal: bo.subtotal || 0, delivery: bo.deliveryFee || 0, grandTotal: bo.total || 0,
+    createdAt: bo.createdAt || Date.now(), acceptedAt: null, prepTime: null, readyAt: null,
+    rejectReason: bo.rejectReason || "", _api: true,
+  };
+}
+
+/* شاشة دخول المطعم */
+const RL_INP = { width: "100%", padding: "11px 13px", border: "1px solid #e7e2d6", borderRadius: 12, margin: "6px 0 14px", fontFamily: "inherit", fontSize: 15, boxSizing: "border-box" };
+const RL_BTN = { width: "100%", padding: "12px", background: "#ffb81c", color: "#17150f", border: "none", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", fontFamily: "inherit" };
+const RL_LINE = { width: "100%", padding: "11px", background: "transparent", color: "#6f6857", border: "1px solid #e7e2d6", borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10, fontFamily: "inherit" };
+function RestLogin({ onDone }){
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const hasAPI = !!window.SonbolAPI;
+  const ok = phone.replace(/\D/g, "").length >= 4 && password.length >= 6;
+  async function submit(){
+    if (!ok || busy || !hasAPI) return;
+    setBusy(true); setErr("");
+    try { await SonbolAPI.login(phone.trim(), password); onDone(true); }
+    catch (e) { setErr(e && e.offline ? "تعذّر الاتصال بالخادم" : (e && e.status === 401 ? "بيانات الدخول غير صحيحة" : (e && e.message) || "خطأ")); }
+    finally { setBusy(false); }
+  }
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f3f1ec", fontFamily: "Tajawal, sans-serif" }} dir="rtl">
+      <div style={{ width: 360, maxWidth: "90vw", background: "#fff", borderRadius: 20, padding: 28, boxShadow: "0 20px 50px rgba(0,0,0,.12)" }}>
+        <div style={{ textAlign: "center", marginBottom: 18 }}>
+          <div style={{ width: 54, height: 54, borderRadius: 14, background: "#17150f", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}><span style={{ color: "#ffb81c", fontWeight: 900, fontSize: 28 }}>س</span></div>
+          <div style={{ fontWeight: 900, fontSize: 20 }}>واجهة المطعم</div>
+          <div style={{ color: "#6f6857", fontSize: 13, marginTop: 4 }}>سجّل دخول حساب المطعم لاستقبال الطلبات</div>
+        </div>
+        <label style={{ fontSize: 13, fontWeight: 700, color: "#6f6857" }}>رقم الجوال</label>
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="05xx xxx xxx" style={RL_INP} />
+        <label style={{ fontSize: 13, fontWeight: 700, color: "#6f6857" }}>كلمة المرور</label>
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} placeholder="••••••" style={RL_INP} />
+        {err && <div style={{ color: "#d93b34", fontSize: 13, fontWeight: 700, margin: "6px 0" }}>{err}</div>}
+        <button onClick={submit} disabled={!ok || busy} style={{ ...RL_BTN, opacity: ok && !busy ? 1 : .5 }}>{busy ? "جارٍ…" : "تسجيل الدخول"}</button>
+        <button onClick={() => onDone(false)} style={RL_LINE}>الدخول بوضع العرض (بدون خادم)</button>
+        <div style={{ textAlign: "center", fontSize: 12, color: "#9c9480", marginTop: 10 }}>تجريبي: 1111 / rest1234</div>
+      </div>
+    </div>
+  );
+}
 
 /* ساعة الشريط العلوي */
 function HeaderClock(){
@@ -68,8 +122,11 @@ function restaurantToHub(o, status, restName){
 
 function App(){
   const saved = useRef(loadState()).current;
+  const apiAuthed = !!(window.SonbolAPI && SonbolAPI.authed());
+  const [apiMode, setApiMode] = useState(apiAuthed);
+  const [entered, setEntered] = useState(apiAuthed);
 
-  const [orders, setOrders]       = useState(() => saved ? saved.orders : S.seedOrders());
+  const [orders, setOrders]       = useState(() => apiAuthed ? [] : (saved ? saved.orders : S.seedOrders()));
   const [menu, setMenu]           = useState(() => saved ? saved.menu : cloneMenu(S.MENU));
   const [view, setView]           = useState(() => (saved && saved.view) || "orders");
   const [accepting, setAccepting] = useState(() => saved ? saved.accepting : true);
@@ -105,10 +162,10 @@ function App(){
     else A.stopAlert();
   }, [alertQueue.length, muted]);
 
-  /* استقبال الطلبات الحيّة من الزبون/الإدارة عبر الـ hub */
+  /* استقبال الطلبات الحيّة من الزبون/الإدارة عبر الـ hub (وضع العرض فقط) */
   const hubSeen = useRef({});
   useEffect(() => {
-    if (!window.SonbolHub) return;
+    if (apiMode || !window.SonbolHub) return;
     function applyHubOrder(h){
       if (!h || !h.id) return;
       const rstatus = mapHubToRest(h.status);
@@ -129,7 +186,35 @@ function App(){
     const off3 = SonbolHub.on("reset", () => { hubSeen.current = {}; resetDemo(); });
     SonbolHub.connect();
     return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
-  }, []);
+  }, [apiMode]);
+
+  /* الوضع الحقيقي: استقبال طلبات هذا المطعم من الباك-إند عبر SSE مصادق */
+  const apiSeen = useRef({});
+  const apiIniting = useRef(false);
+  useEffect(() => {
+    if (!apiMode || !window.SonbolAPI) return;
+    function applyApi(bo){
+      if (!bo || !bo.id) return;
+      const rstatus = mapHubToRest(bo.status);
+      if (rstatus === null) return; // غير مدفوع — لا يظهر بعد
+      const id = String(bo.id);
+      setOrders((prev) => {
+        const ex = prev.find((o) => o.id === id);
+        if (ex) return prev.map((o) => o.id === id ? { ...o, status: rstatus, rejectReason: bo.rejectReason || o.rejectReason } : o);
+        return [...prev, apiOrderToRest(bo)];
+      });
+      const first = !apiSeen.current[id];
+      apiSeen.current[id] = bo.status;
+      if (first && !apiIniting.current && (bo.status === "processing" || bo.status === "new")) {
+        setAlertQueue((q) => q.includes(id) ? q : [...q, id]); // طلب جديد → صوت + منبثقة
+      }
+    }
+    const stop = SonbolAPI.connectStream({
+      onInit: (list) => { apiIniting.current = true; apiSeen.current = {}; setOrders([]); (list || []).forEach(applyApi); apiIniting.current = false; },
+      onOrder: applyApi,
+    });
+    return () => { stop && stop(); };
+  }, [apiMode]);
 
   const newCount   = orders.filter((o) => o.status === "new").length;
   const prepCount  = orders.filter((o) => o.status === "preparing").length;
@@ -155,6 +240,7 @@ function App(){
       ? { ...o, status: "preparing", acceptedAt: Date.now(), prepTime: prep } : o));
     clearFromQueue(order.id);
     A.blip(true);
+    if (apiMode && window.SonbolAPI) { SonbolAPI.transition(order.id, "accept").catch(() => {}); return; }
     if (window.SonbolHub) SonbolHub.publish(restaurantToHub(order, "preparing", settings.name));
   }
   function reject(order, reason){
@@ -164,6 +250,7 @@ function App(){
     clearFromQueue(order.id);
     setRejecting(null);
     A.blip(false);
+    if (apiMode && window.SonbolAPI) { SonbolAPI.transition(order.id, "reject", { reason: reason || "" }).catch(() => {}); return; }
     if (window.SonbolHub) SonbolHub.publish(Object.assign(restaurantToHub(order, "rejected", settings.name), { rejectReason: reason || "" }));
   }
   function action(order, type){
@@ -171,9 +258,11 @@ function App(){
     if (type === "ready"){
       setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: "ready", readyAt: Date.now() } : o));
       A.blip(true);
+      if (apiMode && window.SonbolAPI) { SonbolAPI.transition(order.id, "ready").catch(() => {}); return; }
       if (window.SonbolHub) SonbolHub.publish(restaurantToHub(order, "ready", settings.name));
     }
     if (type === "delivered"){
+      if (apiMode) { setDrawerId(null); return; } // الكابتن هو من يستلم في الوضع الحقيقي
       setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: "delivered", deliveredAt: Date.now() } : o));
       setSession((s) => ({ ...s, delivered: s.delivered + 1, revenue: s.revenue + order.subtotal }));
       setDrawerId(null);
@@ -243,6 +332,8 @@ function App(){
 
   function resetDemo(){
     localStorage.removeItem(LS_KEY);
+    if (window.SonbolAPI) SonbolAPI.logout();
+    setApiMode(false); setEntered(false); apiSeen.current = {};
     setOrders(S.seedOrders());
     setMenu(cloneMenu(S.MENU));
     setAccepting(true);
@@ -260,6 +351,8 @@ function App(){
     { k: "analytics", label: "الإحصاءات", ico: <Ic.chart s={20} /> },
   ];
   const categories = menu.map((c) => c.cat);
+
+  if (!entered) return <RestLogin onDone={(viaApi) => { setEntered(true); setApiMode(!!viaApi); }} />;
 
   return (
     <div className="app">
@@ -389,7 +482,8 @@ function App(){
         />
       )}
 
-      {/* شريط المحاكاة التجريبي */}
+      {/* شريط المحاكاة التجريبي — وضع العرض فقط */}
+      {!apiMode && (
       <div className="demobar">
         <span className="dl">للتجربة: <b>محاكاة</b></span>
         <button className="btn btn-gold btn-sm" onClick={pushOrder} disabled={!accepting}
@@ -400,6 +494,15 @@ function App(){
           إعادة ضبط
         </button>
       </div>
+      )}
+      {apiMode && (
+      <div className="demobar">
+        <span className="dl">متّصل بالخادم · <b>{settings.name || "المطعم"}</b></span>
+        <button className="btn btn-line btn-sm" onClick={() => { if (window.SonbolAPI) SonbolAPI.logout(); setApiMode(false); setEntered(false); }} style={{ color: "rgba(255,255,255,.7)", borderColor: "rgba(255,255,255,.2)" }}>
+          تسجيل الخروج
+        </button>
+      </div>
+      )}
     </div>
   );
 }
