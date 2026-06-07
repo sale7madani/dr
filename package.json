@@ -5,7 +5,9 @@
   "description": "منصّة سنبل لتوصيل الطعام — واجهات الزبون/المطعم/الكابتن/الإدارة مع ناقل أحداث حيّ",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "node server/server.js"
+    "dev": "node server/server.js",
+    "backend": "node --no-warnings backend/server.js",
+    "test": "node --no-warnings backend/test.js"
   },
   "engines": {
     "node": ">=16"

@@ -8,6 +8,12 @@ node_modules/
 # Hub runtime state (regenerated at runtime)
 server/hub-state.json
 
+# Backend runtime: real DB files + signing secret (NEVER commit)
+backend/.secret
+backend/*.db
+backend/*.db-wal
+backend/*.db-shm
+
 # Heavy media — keep out of git (use external storage / git-lfs if needed)
 *.mp4
 *.MP4
