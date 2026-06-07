@@ -16,7 +16,20 @@ function LoginScreen({ onLogin }) {
   const [err, setErr] = React.useState('');
   const [show, setShow] = React.useState(false);
 
-  const submit = () => {
+  const submit = async () => {
+    // دخول حقيقي عبر الباك-إند إن توفّر، وإلا الدخول التجريبي
+    if (window.SonbolAPI && user.trim() && pass) {
+      try {
+        const r = await SonbolAPI.login(user.trim(), pass);
+        onLogin({ type: 'employee', name: (r.user && r.user.name) || 'الكابتن', user: user.trim(), _api: true });
+        return;
+      } catch (e) {
+        const k = user.trim().toLowerCase();
+        if (DEMO_ACCOUNTS[k]) { onLogin(DEMO_ACCOUNTS[k]); return; }
+        setErr(e && e.offline ? 'تعذّر الاتصال بالخادم' : 'بيانات الدخول غير صحيحة');
+        return;
+      }
+    }
     const key = user.trim().toLowerCase();
     const acc = DEMO_ACCOUNTS[key];
     if (!acc || !pass) {

@@ -1,38 +1,49 @@
 # سنبل — منصّة توصيل الطعام · Sonbol Food-Delivery Platform
 
-منظومة متكاملة لتوصيل الطعام (عربي، RTL) مكوّنة من عدّة واجهات. كل الواجهات
-نماذج أوّلية عالية الدقّة (Hi-Fi prototypes) مبنية بـ **React عبر Babel Standalone
-بدون خطوة بناء** — يكفي تشغيل خادم ملفات ثابت وفتح الصفحة.
+منظومة متكاملة لتوصيل الطعام (عربي، RTL): أربع واجهات (الزبون/المطعم/الكابتن/الإدارة)
+**مربوطة بباك-إند حقيقي** — قاعدة بيانات SQL، مصادقة وأدوار، API مؤمّن، وتحديثات حيّة
+(SSE). الواجهات React عبر Babel Standalone (بدون خطوة بناء).
 
-A full Arabic (RTL) food-delivery platform made of several front-ends. Every
-app is a hi-fi prototype built with **React via Babel Standalone — no build
-step**; just serve the folder statically and open it.
+A full Arabic (RTL) food-delivery platform: four front-ends (customer, restaurant,
+captain, admin) **wired to a real backend** — SQL database, auth + roles, a secured
+API, and live updates (SSE). Front-ends are React via Babel Standalone (no build step).
 
-## التشغيل · Running
+## التشغيل · Running (الوضع الحقيقي · real mode)
 
-شغّل المنصّة كلها بأمر واحد (يحتاج Node ≥ 16). الخادم يخدم كل الواجهات **ويربطها حيّاً**
-عبر ناقل أحداث (SSE)، فالطلب الذي ينشئه الزبون يصل فوراً للمطعم والكابتن والإدارة.
-
-Run the whole platform with one command (needs Node ≥ 16). The server hosts every
-app **and wires them together live** via an SSE event bus — an order placed by the
-customer instantly reaches the restaurant, captain and admin.
+يتطلّب **Node ≥ 22** (لأجل `node:sqlite`). أمر واحد يشغّل الباك-إند ويخدم كل الواجهات:
 
 ```bash
-# من جذر المشروع · from the repo root
-npm start            # = node server/server.js
-# ثم افتح · then open  http://localhost:5173/   (لوحة التشغيل · launcher)
+npm start            # = node backend/server.js  →  http://localhost:4000/
 ```
 
-**جرّب التدفّق الكامل · try the full flow:** افتح كل واجهة في تبويب: الزبون والمطعم
-والكابتن والإدارة. أنشئ طلباً من الزبون → سيرنّ صوت في المطعم → اقبله وحضّره وعلّمه
-«جاهز» → سيصل للكابتن → اقبله وسلّمه → الحالة تتحدّث عند الزبون والإدارة لحظياً.
+افتح الواجهات وسجّل الدخول بالحسابات التجريبية المزروعة:
 
-> لا يعمل عبر `file://` (المتصفح يمنع `.jsx` و`EventSource`). التشغيل عبر خادم Node
-> أعلاه هو الطريقة الصحيحة. تشغيل ساكن بسيط (بدون الربط الحيّ) ممكن بـ
-> `python3 -m http.server` لكن لن تتواصل الواجهات.
+| الواجهة | الرابط | الدخول (هاتف / كلمة مرور) |
+| --- | --- | --- |
+| الزبون | `/apps/customer/` | `3333` / `cust1234` (أو سجّل حساباً جديداً) |
+| المطعم | `/apps/restaurant/` | `1111` / `rest1234` |
+| الكابتن | `/apps/captain/` | `2222` / `cap1234` |
+| الإدارة | `/apps/admin/` | `0000` / `admin1234` |
 
-`index.html` في الجذر هو **لوحة تشغيل موحّدة** فيها روابط لكل الواجهات والتوثيق.
-The root `index.html` is a **launcher** linking to every app and doc.
+**التدفّق الكامل:** الزبون يطلب → يرنّ في المطعم → قبول/تحضير/جاهز → يصل للكابتن →
+حجز/استلام/تسليم → الحالة تتحدّث لحظياً عند الزبون والإدارة. كل خطوة محكومة بالأدوار
+والصلاحيات على الخادم، والتسعير يُحسب على الخادم.
+
+> كل واجهة فيها زرّ **«الدخول بوضع العرض»** يشغّلها بدون خادم (نماذج فقط).
+> الوضع التجريبي القديم بالكامل (ناقل أحداث في الذاكرة): `npm run demo` على المنفذ 5173.
+
+## الفحوص · Tests
+
+```bash
+npm test             # 37 اختبار API (مصادقة/أدوار/تسعير/انتقالات/عزل/SSE)
+npm run itest        # اختبار تكامل: رحلة طلب كاملة عبر الأدوار الأربعة + SSE
+```
+
+## الباك-إند · Backend
+
+تفاصيل المعمارية والـAPI في **`backend/README.md`**. باختصار: `node:sqlite` (DB حقيقية)،
+تشفير `scrypt` + توكنات JWT موقّعة، تسعير موثوق على الخادم، وقواعد انتقال محكومة بالأدوار
+مع حارس ترتيب وسجلّ تدقيق. عميل المتصفح المشترك: `shared/api-client.js` (`window.SonbolAPI`).
 
 ## الربط الحيّ بين الواجهات · Live integration (the hub)
 

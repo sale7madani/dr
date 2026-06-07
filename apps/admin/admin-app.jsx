@@ -49,13 +49,73 @@ function adminToHub(o, status){
   };
 }
 
+if (window.SonbolAPI) SonbolAPI.configure({ tokenKey: "sonbol_token_admin" });
+
+/* محوّل: طلب الباك-إند → شكل طلب الإدارة */
+function apiOrderToAdmin(bo){
+  return {
+    id: String(bo.id), number: bo.number,
+    status: bo.status === "rejected" ? "canceled" : bo.status,
+    rid: bo.restaurantId || "", restaurant: bo.restaurantName || "—", restGrad: "linear-gradient(135deg,#b8742a,#8f561a)",
+    uid: bo.customerId || null, customer: bo.customerName || "—", custPhone: bo.customerPhone || "", area: bo.area || bo.address || "—",
+    captainId: bo.captainId || null, captain: bo.captainName || null,
+    items: (bo.items || []).map((i) => ({ name: i.name, price: (i.unit != null ? i.unit : (i.price || 0)), qty: i.qty })),
+    itemCount: (bo.items || []).reduce((s, i) => s + (i.qty || 0), 0),
+    subtotal: bo.subtotal || 0, delivery: bo.deliveryFee || 0, total: bo.total || 0,
+    commission: Math.round((bo.subtotal || 0) * 0.15), km: 0,
+    payment: bo.payMethod || "online", payStatus: bo.paid ? "verified" : "unpaid", payRef: "SB-" + (bo.number || ""),
+    createdAt: bo.createdAt || Date.now(), note: bo.note || "",
+    rejectReason: bo.status === "rejected" ? "رفض المطعم الطلب" : null, issue: null, _api: true,
+  };
+}
+
+/* شاشة دخول الإدارة */
+const AD_INP = { width: "100%", padding: "11px 13px", border: "1px solid #e7e2d6", borderRadius: 12, margin: "6px 0 14px", fontFamily: "inherit", fontSize: 15, boxSizing: "border-box" };
+function AdminLogin({ onDone }){
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const hasAPI = !!window.SonbolAPI;
+  const ok = phone.replace(/\D/g, "").length >= 4 && password.length >= 6;
+  async function submit(){
+    if (!ok || busy || !hasAPI) return;
+    setBusy(true); setErr("");
+    try { await SonbolAPI.login(phone.trim(), password); onDone(true); }
+    catch (e) { setErr(e && e.offline ? "تعذّر الاتصال بالخادم" : (e && e.status === 401 ? "بيانات الدخول غير صحيحة" : (e && e.message) || "خطأ")); }
+    finally { setBusy(false); }
+  }
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#17150f", fontFamily: "Tajawal, sans-serif" }} dir="rtl">
+      <div style={{ width: 370, maxWidth: "90vw", background: "#fff", borderRadius: 20, padding: 30, boxShadow: "0 24px 60px rgba(0,0,0,.4)" }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div style={{ width: 56, height: 56, borderRadius: 15, background: "#17150f", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}><span style={{ color: "#ffb81c", fontWeight: 900, fontSize: 30 }}>س</span></div>
+          <div style={{ fontWeight: 900, fontSize: 21 }}>لوحة تحكم سنبل</div>
+          <div style={{ color: "#6f6857", fontSize: 13, marginTop: 4 }}>دخول الإدارة</div>
+        </div>
+        <label style={{ fontSize: 13, fontWeight: 700, color: "#6f6857" }}>رقم الجوال</label>
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="05xx xxx xxx" style={AD_INP} />
+        <label style={{ fontSize: 13, fontWeight: 700, color: "#6f6857" }}>كلمة المرور</label>
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} placeholder="••••••" style={AD_INP} />
+        {err && <div style={{ color: "#d93b34", fontSize: 13, fontWeight: 700, margin: "6px 0" }}>{err}</div>}
+        <button onClick={submit} disabled={!ok || busy} style={{ width: "100%", padding: 12, background: "#ffb81c", color: "#17150f", border: "none", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", fontFamily: "inherit", opacity: ok && !busy ? 1 : .5 }}>{busy ? "جارٍ…" : "تسجيل الدخول"}</button>
+        <button onClick={() => onDone(false)} style={{ width: "100%", padding: 11, background: "transparent", color: "#6f6857", border: "1px solid #e7e2d6", borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10, fontFamily: "inherit" }}>الدخول بوضع العرض (بدون خادم)</button>
+        <div style={{ textAlign: "center", fontSize: 12, color: "#9c9480", marginTop: 10 }}>تجريبي: 0000 / admin1234</div>
+      </div>
+    </div>
+  );
+}
+
 function App(){
+  const apiAuthed = !!(window.SonbolAPI && SonbolAPI.authed());
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [apiMode, setApiMode] = useState(apiAuthed);
+  const [entered, setEntered] = useState(apiAuthed);
   const [active, setActive] = useState("overview");
   const [search, setSearch] = useState("");
   const [navOpen, setNavOpen] = useState(false);
 
-  const [orders, setOrders] = useState(() => A.seedOrders());
+  const [orders, setOrders] = useState(() => apiAuthed ? [] : A.seedOrders());
   const [captains, setCaptains] = useState(() => A.CAPTAINS.map((c) => ({ ...c })));
   const [restaurants, setRestaurants] = useState(() => A.RESTAURANTS.map((r) => ({ ...r })));
   const [customers, setCustomers] = useState(() => A.CUSTOMERS.map((c) => ({ ...c })));
@@ -106,9 +166,9 @@ function App(){
   function flash(msg, tone){ setToast({ msg, tone: tone || "ink" }); }
   useEffect(() => { if (!toast) return; const x = setTimeout(() => setToast(null), 2600); return () => clearTimeout(x); }, [toast]);
 
-  /* تدفّق الطلبات الحيّ من كل الواجهات → يظهر في لوحة الإدارة مباشرة */
+  /* وضع العرض: تدفّق الطلبات عبر الـ hub التجريبي */
   useEffect(() => {
-    if (!window.SonbolHub) return;
+    if (apiMode || !window.SonbolHub) return;
     function apply(h){
       if (!h || !h.id) return;
       const ao = adminFromHub(h);
@@ -120,10 +180,29 @@ function App(){
     }
     const off1 = SonbolHub.on("order", apply);
     const off2 = SonbolHub.on("init", (list) => list.forEach(apply));
-    const off3 = SonbolHub.on("reset", () => setOrders(A.seedOrders())); // إعادة ضبط موحّدة → استعادة البيانات الأولية
+    const off3 = SonbolHub.on("reset", () => setOrders(A.seedOrders()));
     SonbolHub.connect();
     return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
-  }, []);
+  }, [apiMode]);
+
+  /* الوضع الحقيقي: كل طلبات المنصّة حيّاً من الباك-إند عبر SSE مصادق */
+  useEffect(() => {
+    if (!apiMode || !window.SonbolAPI) return;
+    function applyApi(bo){
+      if (!bo || !bo.id) return;
+      const ao = apiOrderToAdmin(bo);
+      setOrders((prev) => {
+        const i = prev.findIndex((o) => o.id === ao.id);
+        if (i >= 0) { const c = prev.slice(); c[i] = { ...prev[i], ...ao }; return c; }
+        return [ao, ...prev];
+      });
+    }
+    const stop = SonbolAPI.connectStream({
+      onInit: (list) => setOrders((list || []).map(apiOrderToAdmin)),
+      onOrder: applyApi,
+    });
+    return () => { stop && stop(); };
+  }, [apiMode]);
 
   const orderDetail = orderId ? orders.find((o) => o.id === orderId) : null;
   const capDetail = capId ? captains.find((c) => c.id === capId) : null;
@@ -166,7 +245,8 @@ function App(){
     switch (type) {
       case "confirm-payment":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, status: "processing", payStatus: o.payment === "cash" ? "cash" : "verified" } : o));
-        if (window.SonbolHub) SonbolHub.publish(Object.assign(adminToHub(entity, "processing"), { paid: true }));
+        if (apiMode && entity._api && window.SonbolAPI) SonbolAPI.transition(entity.id, "confirm-payment").catch(() => {});
+        else if (window.SonbolHub) SonbolHub.publish(Object.assign(adminToHub(entity, "processing"), { paid: true }));
         flash("تم تأكيد دفع الطلب #" + entity.number + " — انتقل لقيد المعالجة", "green"); break;
       case "approve-order-pay":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, payStatus: "verified", rejectReason: null } : o));
@@ -176,7 +256,8 @@ function App(){
         flash("تم رفض وصل الطلب #" + entity.number + ": " + extra, "red"); break;
       case "dispatch":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, status: "new", captainId: extra.id, captain: extra.name } : o));
-        if (window.SonbolHub) SonbolHub.publish(Object.assign(adminToHub(entity, "new"), { captainId: extra.id, captainName: extra.name }));
+        if (apiMode && entity._api && window.SonbolAPI) { if (!isNaN(Number(extra.id))) SonbolAPI.transition(entity.id, "dispatch", { captainId: Number(extra.id) }).catch(() => {}); }
+        else if (window.SonbolHub) SonbolHub.publish(Object.assign(adminToHub(entity, "new"), { captainId: extra.id, captainName: extra.name }));
         flash("تم تحويل الطلب #" + entity.number + " للمطعم وتعيين الكابتن " + extra.name, "green"); break;
       case "reassign":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, captainId: extra.id, captain: extra.name } : o));
@@ -184,7 +265,8 @@ function App(){
         flash("تم تبديل كابتن الطلب #" + entity.number + " إلى " + extra.name, "green"); break;
       case "cancel":
         setOrders((p) => p.map((o) => o.id === entity.id ? { ...o, status: "canceled" } : o));
-        if (window.SonbolHub) SonbolHub.publish(adminToHub(entity, "canceled"));
+        if (apiMode && entity._api && window.SonbolAPI) SonbolAPI.transition(entity.id, "cancel").catch(() => {});
+        else if (window.SonbolHub) SonbolHub.publish(adminToHub(entity, "canceled"));
         setOrderId(null); flash("تم إلغاء الطلب #" + entity.number, "red"); break;
       case "contact":
         flash("جارٍ الاتصال بالكابتن " + (entity.captain || "")); break;
@@ -235,6 +317,8 @@ function App(){
   }
 
   const meta = SECTION_META[active];
+
+  if (!entered) return <AdminLogin onDone={(viaApi) => { setEntered(true); setApiMode(!!viaApi); }} />;
 
   return (
     <div className={"app" + (navOpen ? " nav-open" : "")}>

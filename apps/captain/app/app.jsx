@@ -142,14 +142,33 @@ function captainStatusHub(o, status) {
   return { id: o.id, number: o.number, status: status, captainId: 'cap-self', captainName: (window.CAPTAIN && CAPTAIN.fullName) || 'الكابتن' };
 }
 
+if (window.SonbolAPI) SonbolAPI.configure({ tokenKey: 'sonbol_token_captain' });
+
+/* محوّل: طلب الباك-إند → شكل طلب الكابتن */
+function apiOrderToCaptain(bo) {
+  return {
+    id: String(bo.id), number: bo.number,
+    store: bo.restaurantName || 'مطعم', storeArea: '', storePhone: '',
+    customer: bo.customerName || 'زبون', customerArea: bo.address || bo.area || '', customerPhone: bo.customerPhone || '',
+    items: (bo.items || []).map((i) => ({ n: i.name, q: i.qty })),
+    note: bo.note || '',
+    total: bo.subtotal || 0, fee: bo.deliveryFee || 0,
+    pay: bo.paid ? 'مدفوع إلكترونياً' : 'نقداً عند التسليم',
+    distKm: 2.5, minutes: bo.etaMax || 15, distToStore: 1.0, rivals: 0, _api: true,
+  };
+}
+
 function App() {
   const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const theme = React.useMemo(() => makeTheme(tw), [tw]);
   const t = theme;
 
   const [account, setAccount] = React.useState(() => {
-    try { return JSON.parse(localStorage.getItem('sb_account') || 'null'); } catch (e) { return null; }
+    try { const a = JSON.parse(localStorage.getItem('sb_account') || 'null'); if (a) return a; } catch (e) {}
+    if (window.SonbolAPI && SonbolAPI.authed()) return { type: 'employee', name: 'الكابتن', _api: true };
+    return null;
   });
+  const [apiMode, setApiMode] = React.useState(!!(window.SonbolAPI && SonbolAPI.authed()));
   const [tab, setTab] = React.useState('home');
   const [online, setOnline] = React.useState(() => {
     try { return !!localStorage.getItem('sb_shift'); } catch (e) { return false; }
@@ -198,11 +217,14 @@ function App() {
   const mode = account?.type || 'employee';
   const login = (acc) => {
     setAccount(acc);
+    setApiMode(!!(acc && acc._api));
     try { localStorage.setItem('sb_account', JSON.stringify(acc)); } catch (e) {}
     setTab('home'); setView('tabs'); setOnline(true);
     setActive(null); setIncoming(null); autoRef.current = false;
   };
   const doLogout = () => {
+    if (window.SonbolAPI) SonbolAPI.logout();
+    setApiMode(false);
     setAccount(null);
     try { localStorage.removeItem('sb_account'); } catch (e) {}
     setActive(null); setIncoming(null); setView('tabs'); setTab('home');
@@ -234,20 +256,37 @@ function App() {
     return () => window.removeEventListener('pointerdown', unlock);
   }, []);
 
-  // auto-offer a demo order shortly after going online (once) — skipped when the live hub is connected
+  // auto-offer a demo order shortly after going online (once) — only in demo mode
   React.useEffect(() => {
+    if (apiMode) return;
     if (online && !active && !incoming && !autoRef.current && !(window.SonbolHub && SonbolHub.connected)) {
       autoRef.current = true;
       const id = setTimeout(() => { if (!active) setIncoming(makeIncomingOrder()); }, 3500);
       return () => clearTimeout(id);
     }
     if (!online) autoRef.current = false;
-  }, [online, active]);
+  }, [online, active, apiMode]);
 
-  // استقبال الطلبات الجاهزة من المطعم عبر الـ hub
+  // الوضع الحقيقي: استقبال الطلبات الجاهزة من الباك-إند عبر SSE مصادق
+  const apiOffered = React.useRef({});
+  React.useEffect(() => {
+    if (!apiMode || !window.SonbolAPI) return;
+    function handle(bo) {
+      if (!bo || !bo.id) return;
+      const id = String(bo.id);
+      if (bo.status === 'ready' && !bo.captainId && online && !active && !incoming && !apiOffered.current[id]) {
+        apiOffered.current[id] = true;
+        setIncoming(apiOrderToCaptain(bo));
+      }
+    }
+    const stop = SonbolAPI.connectStream({ onInit: (list) => (list || []).forEach(handle), onOrder: handle });
+    return () => { stop && stop(); };
+  }, [apiMode, online, active, incoming]);
+
+  // استقبال الطلبات الجاهزة من المطعم عبر الـ hub (وضع العرض فقط)
   const hubOffered = React.useRef({});
   React.useEffect(() => {
-    if (!window.SonbolHub) return;
+    if (apiMode || !window.SonbolHub) return;
     function handle(h) {
       if (!h || !h.id) return;
       if (h.status === 'ready' && !h.captainId && online && !active && !incoming && !hubOffered.current[h.id]) {
@@ -260,12 +299,16 @@ function App() {
     const off3 = SonbolHub.on('reset', () => { hubOffered.current = {}; setIncoming(null); setActive(null); setStageIdx(0); setView('tabs'); setTab('home'); });
     SonbolHub.connect();
     return () => { off1 && off1(); off2 && off2(); off3 && off3(); };
-  }, [online, active, incoming]);
+  }, [online, active, incoming, apiMode]);
 
   const simulate = () => { primeAudio(); if (!active) setIncoming(makeIncomingOrder()); };
   const accept = () => {
     const ord = incoming;
     setActive(ord); setIncoming(null); setStageIdx(0); setView('delivery'); setOnline(true);
+    if (apiMode && ord && ord._api && window.SonbolAPI) {
+      SonbolAPI.transition(ord.id, 'claim').then(() => SonbolAPI.transition(ord.id, 'pickup')).catch(() => {});
+      return;
+    }
     if (window.SonbolHub && ord) SonbolHub.publish(captainStatusHub(ord, 'onway')); // استلمه الكابتن → في الطريق
   };
   const advance = () => {
@@ -275,7 +318,8 @@ function App() {
     });
   };
   const finishDelivery = () => {
-    if (window.SonbolHub && active) SonbolHub.publish(captainStatusHub(active, 'delivered')); // تم التسليم للزبون
+    if (apiMode && active && active._api && window.SonbolAPI) SonbolAPI.transition(active.id, 'deliver').catch(() => {});
+    else if (window.SonbolHub && active) SonbolHub.publish(captainStatusHub(active, 'delivered')); // تم التسليم للزبون
     setActive(null); setStageIdx(0); setView('tabs'); setTab('home'); autoRef.current = false;
   };
   const cancelOrder = () => setConfirm({

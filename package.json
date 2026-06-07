@@ -4,13 +4,14 @@
   "private": true,
   "description": "منصّة سنبل لتوصيل الطعام — واجهات الزبون/المطعم/الكابتن/الإدارة مع ناقل أحداث حيّ",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "node server/server.js",
+    "start": "node --no-warnings backend/server.js",
     "backend": "node --no-warnings backend/server.js",
-    "test": "node --no-warnings backend/test.js"
+    "demo": "node server/server.js",
+    "test": "node --no-warnings backend/test.js",
+    "itest": "node --no-warnings backend/itest.js"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   },
   "devDependencies": {
     "@babel/standalone": "^7.29.7"
