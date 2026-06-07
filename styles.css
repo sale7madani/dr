@@ -1,0 +1,69 @@
+/* styles.css — Sunbul Captain: global shell, responsive phone frame, animations.
+   (Component visuals are set inline via the theme in app/ds.jsx.) */
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background: #232720;
+  background-image: radial-gradient(circle at 50% 0%, #34392f 0%, #1f231c 70%);
+  font-family: 'Tajawal', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* responsive mobile-web shell: full-bleed on phones, centred phone column on desktop */
+#root {
+  width: 100%;
+  max-width: 430px;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: #f7f5ee;
+}
+.sb-app { padding-top: env(safe-area-inset-top, 0px); }
+@media (min-width: 470px) {
+  body { padding: 24px; }
+  #root {
+    height: min(920px, calc(100dvh - 48px));
+    border-radius: 30px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+  }
+}
+button { font-family: inherit; }
+::-webkit-scrollbar { width: 0; height: 0; }
+* { scrollbar-width: none; }
+
+/* ── animations ───────────────────────────── */
+@keyframes sb-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sb-rise { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sb-rise-full { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes sb-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+  50% { transform: scale(1.015); }
+}
+@keyframes sb-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes sb-bob {
+  0%, 100% { transform: translate(-50%, -50%); }
+  50% { transform: translate(-50%, -58%); }
+}
+.sb-blink { animation: sb-blink-a 1.2s ease-in-out infinite; }
+@keyframes sb-blink-a { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+.sb-radar { animation: sb-radar-a 2.4s ease-out infinite; opacity: 0; }
+.sb-radar2 { animation-delay: 1.2s; }
+@keyframes sb-radar-a {
+  0% { transform: scale(0.3); opacity: 0.7; }
+  100% { transform: scale(1.1); opacity: 0; }
+}
+.sb-dots span {
+  width: 9px; height: 9px; border-radius: 50%; background: #fff; display: inline-block;
+  animation: sb-dots-a 1s ease-in-out infinite;
+}
+.sb-dots span:nth-child(2) { animation-delay: 0.16s; }
+.sb-dots span:nth-child(3) { animation-delay: 0.32s; }
+@keyframes sb-dots-a { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
