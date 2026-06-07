@@ -22,28 +22,8 @@ function init() {
       phone         TEXT    NOT NULL UNIQUE,
       pass_hash     TEXT    NOT NULL,
       pass_salt     TEXT    NOT NULL,
-      restaurant_id INTEGER,
+      restaurant_id TEXT,
       created_at    INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS restaurants (
-      id           INTEGER PRIMARY KEY AUTOINCREMENT,
-      name         TEXT    NOT NULL,
-      area         TEXT,
-      phone        TEXT,
-      delivery_fee INTEGER NOT NULL DEFAULT 8,
-      eta_min      INTEGER NOT NULL DEFAULT 20,
-      eta_max      INTEGER NOT NULL DEFAULT 40,
-      status       TEXT    NOT NULL DEFAULT 'active',
-      created_at   INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS menu_items (
-      id            INTEGER PRIMARY KEY AUTOINCREMENT,
-      restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
-      name          TEXT    NOT NULL,
-      price         INTEGER NOT NULL,
-      available     INTEGER NOT NULL DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS orders (
@@ -53,7 +33,7 @@ function init() {
       customer_id    INTEGER NOT NULL REFERENCES users(id),
       customer_name  TEXT,
       customer_phone TEXT,
-      restaurant_id  INTEGER NOT NULL REFERENCES restaurants(id),
+      restaurant_id  TEXT    NOT NULL,
       restaurant_name TEXT,
       captain_id     INTEGER REFERENCES users(id),
       captain_name   TEXT,

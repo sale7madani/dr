@@ -131,10 +131,14 @@ const server = http.createServer(async (req, res) => {
       if (!user) return json(res, 401, { error: "unauthorized" });
 
       if (p === "/api/me" && m === "GET") return json(res, 200, { user });
-      if (p === "/api/catalog/restaurants" && m === "GET") return json(res, 200, { restaurants: catalog.listRestaurants() });
+      if (p === "/api/catalog" && m === "GET") return json(res, 200, { restaurants: catalog.restaurants(), mods: catalog.modGroups() });
+      if (p === "/api/catalog/restaurants" && m === "GET") return json(res, 200, { restaurants: catalog.restaurants() });
       let mm;
-      if ((mm = p.match(/^\/api\/catalog\/restaurants\/(\d+)\/menu$/)) && m === "GET")
-        return json(res, 200, { menu: catalog.listMenu(Number(mm[1])) });
+      if ((mm = p.match(/^\/api\/catalog\/restaurants\/([\w-]+)\/menu$/)) && m === "GET") {
+        const rr = catalog.getRestaurant(mm[1]);
+        if (!rr) return json(res, 404, { error: "not found" });
+        return json(res, 200, { menu: rr.menu });
+      }
       if (p === "/api/captains" && m === "GET") {
         if (user.role !== "admin") return json(res, 403, { error: "forbidden" });
         return json(res, 200, { captains: db.prepare("SELECT id, name, phone FROM users WHERE role = 'captain'").all() });
@@ -166,13 +170,15 @@ const server = http.createServer(async (req, res) => {
 /* ---------- تهيئة + بيانات أولية ---------- */
 function seedUsers() {
   if (db.prepare("SELECT COUNT(*) AS c FROM users").get().c > 0) return;
-  const rests = db.prepare("SELECT id FROM restaurants ORDER BY id").all();
+  const rests = catalog.restaurants();
+  const firstSlug = rests[0] && rests[0].id;
+  const firstName = rests[0] ? (rests[0].nameAr || rests[0].name) : "مطعم";
   auth.createUser({ role: "admin", name: "مدير سنبل", phone: "0000", password: "admin1234" });
   auth.createUser({ role: "captain", name: "محمود العلي", phone: "2222", password: "cap1234" });
   auth.createUser({ role: "customer", name: "سيف", phone: "3333", password: "cust1234" });
-  auth.createUser({ role: "restaurant", name: "كاشير بيت الشام", phone: "1111", password: "rest1234", restaurant_id: rests[0] && rests[0].id });
+  auth.createUser({ role: "restaurant", name: "كاشير " + firstName, phone: "1111", password: "rest1234", restaurant_id: firstSlug });
 }
-function bootstrap() { init(); catalog.seedCatalog(); seedUsers(); }
+function bootstrap() { init(); seedUsers(); }
 
 function start(port) {
   bootstrap();

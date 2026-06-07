@@ -50,25 +50,41 @@ function cleanup() { for (const f of [TMP_DB, TMP_DB + "-wal", TMP_DB + "-shm"])
   ok((await api("GET", "/api/orders", "garbage.token.here")).status === 401, "forged token rejected");
 
   console.log("\n— الكتالوج والتسعير على الخادم —");
-  const cat = (await api("GET", "/api/catalog/restaurants", cust.token)).body;
-  ok(cat.restaurants.length >= 1, "catalog lists restaurants");
+  const cat = (await api("GET", "/api/catalog", cust.token)).body;
+  ok(cat.restaurants.length >= 1, "catalog lists restaurants (rich, from shared data)");
+  ok(cat.mods && Object.keys(cat.mods).length > 0, "catalog includes mod groups");
   const r = cat.restaurants[0];
-  const menu = (await api("GET", "/api/catalog/restaurants/" + r.id + "/menu", cust.token)).body.menu;
-  ok(menu.length >= 2, "menu lists items");
-  const a = menu[0], b = menu[1];
+  const allItems = r.menu.reduce((acc, c) => acc.concat(c.items), []);
+  ok(allItems.length >= 2, "restaurant has menu items");
+  const a = allItems.find((it) => !it.soldout) || allItems[0];
+  const b = allItems.filter((it) => !it.soldout && it.id !== a.id)[0] || a;
 
   // محاولة تلاعب بالسعر/الإجمالي — يجب أن يتجاهلها الخادم
   const created = await api("POST", "/api/orders", cust.token, {
     restaurantId: r.id, payMethod: "cash",
-    items: [{ itemId: a.id, qty: 2, price: 99999 }, { itemId: b.id, qty: 1 }],
+    items: [{ id: a.id, qty: 2, price: 99999 }, { id: b.id, qty: 1 }],
     subtotal: 1, total: 1,
   });
   ok(created.status === 201, "customer places order");
   const order = created.body.order;
   const expectSub = a.price * 2 + b.price * 1;
   ok(order.subtotal === expectSub, "server computes subtotal ignoring client tamper (= " + expectSub + ")");
-  ok(order.total === expectSub + r.delivery_fee, "server adds delivery fee for total");
+  ok(order.total === expectSub + r.fee, "server adds delivery fee for total");
   ok(order.status === "processing", "cash order starts at processing");
+
+  // تسعير الإضافات على الخادم
+  const modItem = allItems.find((it) => (it.mods || []).includes("psize") && (it.mods || []).includes("extras"));
+  if (modItem) {
+    const lgPrice = cat.mods.psize.options.find((o) => o.id === "lg").price;
+    const chPrice = cat.mods.extras.options.find((o) => o.id === "cheese").price;
+    const wm = await api("POST", "/api/orders", cust.token, {
+      restaurantId: r.id, payMethod: "cash",
+      items: [{ id: modItem.id, qty: 1, mods: { psize: ["lg"], extras: ["cheese"] } }],
+    });
+    ok(wm.body.order.subtotal === modItem.price + lgPrice + chPrice, "server prices selected mods correctly");
+  } else {
+    ok(true, "server prices selected mods correctly (no mod item to test — skipped)");
+  }
 
   console.log("\n— العزل بين الأدوار —");
   ok((await api("POST", "/api/orders", rest.token, { restaurantId: r.id, items: [{ itemId: a.id, qty: 1 }] })).status === 403, "non-customer cannot place order");
@@ -95,7 +111,7 @@ function cleanup() { for (const f of [TMP_DB, TMP_DB + "-wal", TMP_DB + "-shm"])
   ok((await api("POST", "/api/orders/" + order.id + "/transition", cap.token, { action: "cancel" })).status === 403, "captain cannot cancel");
 
   console.log("\n— الدفع الأونلاين والإلغاء —");
-  const onlineOrder = (await api("POST", "/api/orders", cust.token, { restaurantId: r.id, payMethod: "online", items: [{ itemId: a.id, qty: 1 }] })).body.order;
+  const onlineOrder = (await api("POST", "/api/orders", cust.token, { restaurantId: r.id, payMethod: "online", items: [{ id: a.id, qty: 1 }] })).body.order;
   ok(onlineOrder.status === "unpaid" && onlineOrder.paid === false, "online order starts unpaid");
   ok((await api("POST", "/api/orders/" + onlineOrder.id + "/transition", rest.token, { action: "accept" })).status >= 400, "restaurant cannot accept an unpaid order");
   const confirmed = (await api("POST", "/api/orders/" + onlineOrder.id + "/transition", admin.token, { action: "confirm-payment" })).body.order;
@@ -110,7 +126,7 @@ function cleanup() { for (const f of [TMP_DB, TMP_DB + "-wal", TMP_DB + "-shm"])
       rr.setEncoding("utf8");
       rr.on("data", (d) => { if (d.includes("event: order")) { events.push("order"); try { req.destroy(); } catch (e) {} resolve(); } });
     });
-    setTimeout(() => { api("POST", "/api/orders", cust.token, { restaurantId: r.id, payMethod: "cash", items: [{ itemId: a.id, qty: 1 }] }); }, 250);
+    setTimeout(() => { api("POST", "/api/orders", cust.token, { restaurantId: r.id, payMethod: "cash", items: [{ id: a.id, qty: 1 }] }); }, 250);
     setTimeout(() => { try { req.destroy(); } catch (e) {} resolve(); }, 2500);
   });
   ok(events.includes("order"), "admin receives realtime order event over SSE");

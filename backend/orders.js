@@ -43,37 +43,38 @@ function recordEvent(orderId, type, role, actorId, from, to, payload) {
 
 /* ---------- إنشاء طلب (التسعير من الكتالوج، يتجاهل أي سعر من العميل) ---------- */
 function createOrder(user, body) {
-  const rid = Number(body && body.restaurantId);
+  const rid = String((body && body.restaurantId) || "");
   const rest = catalog.getRestaurant(rid);
-  if (!rest || rest.status !== "active") throw httpErr(400, "restaurant not found");
+  if (!rest || rest.open === false) throw httpErr(400, "restaurant not found");
   if (!body || !Array.isArray(body.items) || body.items.length === 0) throw httpErr(400, "items required");
 
   let subtotal = 0;
   const items = [];
   for (const line of body.items) {
-    const it = catalog.getItem(Number(line && line.itemId));
-    if (!it || it.restaurant_id !== rid) throw httpErr(400, "invalid item " + (line && line.itemId));
-    if (!it.available) throw httpErr(400, "item unavailable: " + it.name);
+    const priced = catalog.unitPrice(rid, line);
+    if (!priced) throw httpErr(400, "invalid item " + (line && (line.id || line.itemId)));
+    if (priced.item.soldout) throw httpErr(400, "item unavailable: " + priced.item.name);
     const qty = Math.max(1, Math.min(50, parseInt(line.qty, 10) || 1));
-    subtotal += it.price * qty;
-    items.push({ id: it.id, name: it.name, price: it.price, qty });
+    subtotal += priced.unit * qty;
+    items.push({ id: priced.item.id, name: priced.item.name, qty, unit: priced.unit, mods: line.mods || {} });
   }
 
-  const deliveryFee = rest.delivery_fee;
+  const deliveryFee = rest.fee || 0;
   const total = subtotal + deliveryFee;
   const payMethod = body.payMethod === "online" ? "online" : "cash";
   const status = payMethod === "online" ? "unpaid" : "processing"; // أونلاين ينتظر تأكيد الإدارة
   const now = Date.now();
   const number = genNumber();
+  const restName = rest.nameAr || rest.name;
 
   const info = db.prepare(`INSERT INTO orders
     (number, status, customer_id, customer_name, customer_phone, restaurant_id, restaurant_name,
      items, subtotal, delivery_fee, total, pay_method, paid, note, address, area, eta_min, eta_max, created_at, updated_at)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
-    number, status, user.id, user.name, user.phone, rid, rest.name,
+    number, status, user.id, user.name, user.phone, rid, restName,
     JSON.stringify(items), subtotal, deliveryFee, total, payMethod, 0,
-    String(body.note || ""), String(body.address || ""), String(body.area || rest.area || ""),
-    rest.eta_min, rest.eta_max, now, now
+    String(body.note || ""), String(body.address || ""), String(body.area || ""),
+    rest.etaMin || null, rest.etaMax || null, now, now
   );
   const id = Number(info.lastInsertRowid);
   recordEvent(id, "created", user.role, user.id, null, status, { payMethod });
