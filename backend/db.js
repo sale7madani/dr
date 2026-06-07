@@ -20,6 +20,7 @@ function init() {
       role          TEXT    NOT NULL CHECK(role IN ('customer','restaurant','captain','admin')),
       name          TEXT    NOT NULL,
       phone         TEXT    NOT NULL UNIQUE,
+      email         TEXT,
       pass_hash     TEXT    NOT NULL,
       pass_salt     TEXT    NOT NULL,
       restaurant_id TEXT,
@@ -71,6 +72,8 @@ function init() {
     CREATE INDEX IF NOT EXISTS idx_orders_cap    ON orders(captain_id);
     CREATE INDEX IF NOT EXISTS idx_events_order  ON order_events(order_id);
   `);
+  // ترقية آمنة لقواعد بيانات قديمة (يتجاهل الخطأ لو العمود موجود)
+  try { db.exec("ALTER TABLE users ADD COLUMN email TEXT"); } catch (e) {}
 }
 
 module.exports = { db, init, DB_PATH };

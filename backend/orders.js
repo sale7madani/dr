@@ -61,8 +61,8 @@ function createOrder(user, body) {
 
   const deliveryFee = rest.fee || 0;
   const total = subtotal + deliveryFee;
-  const payMethod = body.payMethod === "online" ? "online" : "cash";
-  const status = payMethod === "online" ? "unpaid" : "processing"; // أونلاين ينتظر تأكيد الإدارة
+  const payMethod = "cash"; // لا دفع إلكتروني حالياً — الدفع نقداً عند الاستلام
+  const status = "processing"; // يُؤكَّد فوراً (والتأكيد يُرسَل بالإيميل)
   const now = Date.now();
   const number = genNumber();
   const restName = rest.nameAr || rest.name;

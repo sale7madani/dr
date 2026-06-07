@@ -137,7 +137,7 @@ function ConfirmScreen({ groups, address, addresses, onPickAddress, onEditDelive
 
       <div className="actionbar">
         <button className="btn btn-gold btn-block btn-lg" onClick={onNext} style={{ justifyContent: "space-between" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Ic.card s={19} /> متابعة لطريقة الدفع</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Ic.check2 s={19} /> تأكيد الطلب</span>
           <span className="tnum">{SB.money(total)}</span>
         </button>
       </div>
@@ -275,16 +275,13 @@ function PaymentScreen({ total, onPlace, back }){
 
 /* ===================== مودال الإرسال + شاشة تم الطلب ===================== */
 function PlacedScreen({ order, onTrack, onHome }){
-  const unpaid = order.status === "unpaid";
   return (
     <div className="screen">
       <div className="confirm">
-        <div className={"c-burst " + (unpaid ? "red" : "gold")}>{unpaid ? <Ic.alert s={48} /> : <Ic.shield s={48} />}</div>
-        <div className="c-t">{unpaid ? "تم استلام طلبك" : "تم استلام طلبك!"}</div>
+        <div className="c-burst gold"><Ic.shield s={48} /></div>
+        <div className="c-t">تم استلام طلبك!</div>
         <div className="c-s">
-          {unpaid
-            ? <>طلبك الآن بحالة <b>غير مدفوع</b> — سيتواصل معك فريق الدعم لإتمام الدفع، وبعدها يُحوَّل طلبك للمطعم.</>
-            : <>طلبك الآن <b>قيد المعالجة</b> لدى إدارة سُنبل — نتأكد من التحويل ثم نحوّله للمطعم خلال دقائق.</>}
+          طلبك الآن <b>قيد المعالجة</b> وحُوّل إلى المطعم. أرسلنا تأكيداً إلى <b>بريدك الإلكتروني</b> وستصلك تحديثات الحالة أولاً بأول.
         </div>
         <div className="c-order">
           <small>رقم الطلب</small>

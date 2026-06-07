@@ -15,6 +15,7 @@ const { db, init } = require("./db");
 const auth = require("./auth");
 const catalog = require("./catalog");
 const orders = require("./orders");
+const email = require("./email");
 
 const ROOT = path.resolve(__dirname, "..");
 
@@ -104,8 +105,10 @@ function register(res, b) {
   const role = b.role === "captain" ? "captain" : "customer"; // العام يسجّل زبون/كابتن فقط
   if (!b.name || !b.phone || !b.password) return json(res, 400, { error: "name, phone, password required" });
   if (String(b.password).length < 6) return json(res, 400, { error: "password must be at least 6 chars" });
+  const em = String(b.email || "").trim();
+  if (role === "customer" && !/.+@.+\..+/.test(em)) return json(res, 400, { error: "valid email required" });
   if (auth.userByPhone(String(b.phone))) return json(res, 409, { error: "phone already registered" });
-  const u = auth.createUser({ role, name: String(b.name).slice(0, 60), phone: String(b.phone).slice(0, 30), password: String(b.password) });
+  const u = auth.createUser({ role, name: String(b.name).slice(0, 60), phone: String(b.phone).slice(0, 30), email: em || null, password: String(b.password) });
   return json(res, 201, { token: auth.signToken({ uid: u.id, role: u.role }), user: u });
 }
 function login(res, b) {
@@ -144,9 +147,15 @@ const server = http.createServer(async (req, res) => {
         return json(res, 200, { captains: db.prepare("SELECT id, name, phone FROM users WHERE role = 'captain'").all() });
       }
       if (p === "/api/orders" && m === "GET") return json(res, 200, { orders: orders.listForUser(user) });
+      if (p === "/api/emails" && m === "GET") {
+        if (user.role !== "admin") return json(res, 403, { error: "forbidden" });
+        return json(res, 200, { emails: email.outbox() });
+      }
       if (p === "/api/orders" && m === "POST") {
         if (user.role !== "customer") return json(res, 403, { error: "only customers place orders" });
-        const o = orders.createOrder(user, await readBody(req)); broadcastOrder(o); return json(res, 201, { order: o });
+        const o = orders.createOrder(user, await readBody(req)); broadcastOrder(o);
+        email.sendOrderConfirmation(o, user.email); // تأكيد الطلب بالإيميل
+        return json(res, 201, { order: o });
       }
       if ((mm = p.match(/^\/api\/orders\/(\d+)$/)) && m === "GET") {
         const o = orders.getOrder(Number(mm[1]));
@@ -155,7 +164,12 @@ const server = http.createServer(async (req, res) => {
       }
       if ((mm = p.match(/^\/api\/orders\/(\d+)\/transition$/)) && m === "POST") {
         const b = await readBody(req);
-        const o = orders.transition(user, Number(mm[1]), b.action, b); broadcastOrder(o); return json(res, 200, { order: o });
+        const o = orders.transition(user, Number(mm[1]), b.action, b); broadcastOrder(o);
+        if (["onway", "delivered", "rejected", "canceled"].includes(o.status)) {
+          const cu = auth.userById(o.customerId);
+          email.sendStatusUpdate(o, cu && cu.email, o.status); // تحديث الحالة بالإيميل
+        }
+        return json(res, 200, { order: o });
       }
       return json(res, 404, { error: "no such endpoint" });
     }
@@ -173,10 +187,10 @@ function seedUsers() {
   const rests = catalog.restaurants();
   const firstSlug = rests[0] && rests[0].id;
   const firstName = rests[0] ? (rests[0].nameAr || rests[0].name) : "مطعم";
-  auth.createUser({ role: "admin", name: "مدير سنبل", phone: "0000", password: "admin1234" });
-  auth.createUser({ role: "captain", name: "محمود العلي", phone: "2222", password: "cap1234" });
-  auth.createUser({ role: "customer", name: "سيف", phone: "3333", password: "cust1234" });
-  auth.createUser({ role: "restaurant", name: "كاشير " + firstName, phone: "1111", password: "rest1234", restaurant_id: firstSlug });
+  auth.createUser({ role: "admin", name: "مدير سنبل", phone: "0000", email: "admin@sonbol.app", password: "admin1234" });
+  auth.createUser({ role: "captain", name: "محمود العلي", phone: "2222", email: "captain@sonbol.app", password: "cap1234" });
+  auth.createUser({ role: "customer", name: "سيف", phone: "3333", email: "customer@example.com", password: "cust1234" });
+  auth.createUser({ role: "restaurant", name: "كاشير " + firstName, phone: "1111", email: "rest@sonbol.app", password: "rest1234", restaurant_id: firstSlug });
 }
 function bootstrap() { init(); seedUsers(); }
 

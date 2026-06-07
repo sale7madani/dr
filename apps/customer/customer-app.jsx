@@ -205,7 +205,7 @@ function App(){
 
   function placeOrder(pay){
     if (apiMode && window.SonbolAPI) return placeOrderAPI(pay);
-    const status = pay.paid ? "processing" : "unpaid";
+    const status = "processing"; // لا دفع مسبق — يُؤكَّد فوراً (والتأكيد عبر الإيميل)
     const order = {
       id: "o" + Date.now(), number: SB.newOrderNumber(),
       restaurants: groups.map((g) => g.restaurantId),
@@ -282,7 +282,7 @@ function App(){
       case "confirm":
         return <ConfirmScreen groups={groups} address={address} addresses={addrList} onPickAddress={setAddrId}
           onEditDelivery={() => go({ name: "addaddr", edit: address })} subtotal={subtotal} deliveryFee={deliveryFee} total={total}
-          restNote={restNote} setRestNote={setRestNote} onNext={() => go({ name: "payment" })} back={back} />;
+          restNote={restNote} setRestNote={setRestNote} onNext={() => placeOrder({ paid: false, method: "نقداً عند الاستلام" })} back={back} />;
       case "payment":
         return <PaymentScreen total={total} back={back} onPlace={placeOrder} />;
       case "placed":

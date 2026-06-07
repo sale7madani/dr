@@ -6,20 +6,22 @@
 function AuthScreen({ onDone }){
   const [mode, setMode] = useState("login");   // login | register
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const hasAPI = !!window.SonbolAPI;
   const phoneOk = phone.replace(/\D/g, "").length >= 4;
-  const ok = phoneOk && password.length >= 6 && (mode === "login" || name.trim().length >= 2);
+  const emailOk = /.+@.+\..+/.test(email.trim());
+  const ok = phoneOk && password.length >= 6 && (mode === "login" || (name.trim().length >= 2 && emailOk));
 
   async function submit(){
     if (!ok || busy || !hasAPI) return;
     setBusy(true); setErr("");
     try {
       if (mode === "login") await SonbolAPI.login(phone.trim(), password);
-      else await SonbolAPI.register({ role: "customer", name: name.trim(), phone: phone.trim(), password });
+      else await SonbolAPI.register({ role: "customer", name: name.trim(), email: email.trim(), phone: phone.trim(), password });
       onDone(true);
     } catch (e) {
       setErr(e && e.offline ? "تعذّر الاتصال بالخادم — جرّب الدخول التجريبي" :
@@ -42,6 +44,15 @@ function AuthScreen({ onDone }){
               <div className="inp">
                 <span className="i-ic"><Ic.user s={20} /></span>
                 <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسمك الكامل" />
+              </div>
+            </div>
+          )}
+          {mode === "register" && (
+            <div>
+              <div className="field-l">البريد الإلكتروني <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>(يصلك عليه تأكيد الطلب)</span></div>
+              <div className="inp ltr">
+                <span className="i-ic"><Ic.note s={20} /></span>
+                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" type="email" inputMode="email" />
               </div>
             </div>
           )}

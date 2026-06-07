@@ -68,17 +68,17 @@ function verifyToken(token) {
 
 /* ---------- مستخدمون ---------- */
 function userById(id) {
-  return db.prepare("SELECT id, role, name, phone, restaurant_id FROM users WHERE id = ?").get(id) || null;
+  return db.prepare("SELECT id, role, name, phone, email, restaurant_id FROM users WHERE id = ?").get(id) || null;
 }
 function userByPhone(phone) {
   return db.prepare("SELECT * FROM users WHERE phone = ?").get(phone) || null;
 }
-function createUser({ role, name, phone, password, restaurant_id }) {
+function createUser({ role, name, phone, email, password, restaurant_id }) {
   if (!ROLES.includes(role)) throw new Error("invalid role");
   const { salt, hash } = hashPassword(password);
   const info = db.prepare(
-    "INSERT INTO users(role, name, phone, pass_hash, pass_salt, restaurant_id, created_at) VALUES(?,?,?,?,?,?,?)"
-  ).run(role, name, String(phone), hash, salt, restaurant_id != null ? restaurant_id : null, Date.now());
+    "INSERT INTO users(role, name, phone, email, pass_hash, pass_salt, restaurant_id, created_at) VALUES(?,?,?,?,?,?,?,?)"
+  ).run(role, name, String(phone), email || null, hash, salt, restaurant_id != null ? restaurant_id : null, Date.now());
   return userById(Number(info.lastInsertRowid));
 }
 

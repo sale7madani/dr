@@ -13,6 +13,7 @@ backend/.secret
 backend/*.db
 backend/*.db-wal
 backend/*.db-shm
+backend/outbox/
 
 # Heavy media — keep out of git (use external storage / git-lfs if needed)
 *.mp4

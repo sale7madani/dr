@@ -110,14 +110,15 @@ function cleanup() { for (const f of [TMP_DB, TMP_DB + "-wal", TMP_DB + "-shm"])
   ok((await api("POST", "/api/orders/" + order.id + "/transition", rest.token, { action: "accept" })).status >= 400, "rank guard: no transition after delivered");
   ok((await api("POST", "/api/orders/" + order.id + "/transition", cap.token, { action: "cancel" })).status === 403, "captain cannot cancel");
 
-  console.log("\n— الدفع الأونلاين والإلغاء —");
-  const onlineOrder = (await api("POST", "/api/orders", cust.token, { restaurantId: r.id, payMethod: "online", items: [{ id: a.id, qty: 1 }] })).body.order;
-  ok(onlineOrder.status === "unpaid" && onlineOrder.paid === false, "online order starts unpaid");
-  ok((await api("POST", "/api/orders/" + onlineOrder.id + "/transition", rest.token, { action: "accept" })).status >= 400, "restaurant cannot accept an unpaid order");
-  const confirmed = (await api("POST", "/api/orders/" + onlineOrder.id + "/transition", admin.token, { action: "confirm-payment" })).body.order;
-  ok(confirmed.status === "processing" && confirmed.paid === true, "admin confirm-payment -> processing + paid");
-  const canceled = (await api("POST", "/api/orders/" + onlineOrder.id + "/transition", cust.token, { action: "cancel" })).body.order;
+  console.log("\n— بلا دفع + الإلغاء + تأكيد الإيميل —");
+  const o2 = (await api("POST", "/api/orders", cust.token, { restaurantId: r.id, items: [{ id: a.id, qty: 1 }] })).body.order;
+  ok(o2.status === "processing" && o2.paid === false, "order is confirmed immediately (no payment step)");
+  const canceled = (await api("POST", "/api/orders/" + o2.id + "/transition", cust.token, { action: "cancel" })).body.order;
   ok(canceled.status === "canceled", "customer cancels own order");
+  await new Promise((r) => setTimeout(r, 60)); // امنح الإيميل لحظة
+  const emails = (await api("GET", "/api/emails", admin.token)).body.emails;
+  ok(Array.isArray(emails) && emails.some((e) => /تأكيد طلبك/.test(e.subject)), "order confirmation email was sent (outbox)");
+  ok((await api("GET", "/api/emails", cust.token)).status === 403, "non-admin cannot read the email outbox");
 
   console.log("\n— Realtime (SSE) —");
   const events = [];
@@ -132,9 +133,10 @@ function cleanup() { for (const f of [TMP_DB, TMP_DB + "-wal", TMP_DB + "-shm"])
   ok(events.includes("order"), "admin receives realtime order event over SSE");
 
   console.log("\n— التسجيل العام —");
-  const reg = await api("POST", "/api/auth/register", null, { role: "customer", name: "زبون جديد", phone: "5555", password: "secret1" });
-  ok(reg.status === 201 && reg.body.token, "public can register as customer");
-  const sneaky = await api("POST", "/api/auth/register", null, { role: "admin", name: "x", phone: "9999", password: "secret1" });
+  const reg = await api("POST", "/api/auth/register", null, { role: "customer", name: "زبون جديد", email: "new@example.com", phone: "5555", password: "secret1" });
+  ok(reg.status === 201 && reg.body.token, "public can register as customer (with email)");
+  ok((await api("POST", "/api/auth/register", null, { role: "customer", name: "x", phone: "6666", password: "secret1" })).status === 400, "register without email is rejected");
+  const sneaky = await api("POST", "/api/auth/register", null, { role: "admin", name: "x", email: "a@b.co", phone: "9999", password: "secret1" });
   ok(sneaky.body.user.role !== "admin", "register cannot self-assign admin role");
 
   console.log("\nRESULT: " + pass + " passed, " + fail + " failed\n");
