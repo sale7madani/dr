@@ -20,3 +20,6 @@ backend/outbox/
 *.MP4
 *.mov
 *.MOV
+
+# أرشيف صور الكتالوج — يبقى محلياً ولا يُرفع (يُرفع manifest/results/السكربت فقط)
+catalog-images/images/
